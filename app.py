@@ -1,4 +1,6 @@
 from helper import clear_display
+from manager import Manager
+import sys
 
 
 class SimpleLibrary:
@@ -10,6 +12,9 @@ class SimpleLibrary:
     DISPLAY_ALL_BOOKS = '4'
     CHANGE_BOOK_STATUS = '5'
     QUIT = "q"
+
+    def __init__(self):
+        self._manager = Manager(self)
 
     @classmethod
     def run(cls):
@@ -33,23 +38,7 @@ class SimpleLibrary:
             action_num = input("Select a menu item: ")
             if action_num.lower() == self.QUIT:
                 break
-            self.actions_handle(action_num)
-
-    def actions_handle(self, action_num: str):
-        """ Обрабатывает выбранное действие """
-        match action_num:
-            case self.ADD_BOOK:
-                print("Book is added")
-            case self.REMOVE_BOOK:
-                print("Book is removed")
-            case self.SEARCH_BOOK:
-                print("Book is search")
-            case self.DISPLAY_ALL_BOOKS:
-                print("Displaying books")
-            case self.CHANGE_BOOK_STATUS:
-                print("Changed book status")
-            case _:
-                print("There is no such menu")
+            self._manager.actions_handle(action_num)
 
 
 if __name__ == "__main__":
