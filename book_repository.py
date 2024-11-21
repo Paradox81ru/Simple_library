@@ -2,11 +2,12 @@ from pathlib import Path
 import json
 from typing import Any
 
+from abstract_book_repository import AbstractBookRepository
 from book import Book, BookStatus
 from exceptions import BookRepositoryError
 
 
-class BookRepository:
+class BookRepository(AbstractBookRepository):
     """ Хранилище книг """
     def __init__(self):
         self._last_id = 0

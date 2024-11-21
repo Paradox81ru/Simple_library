@@ -1,5 +1,5 @@
 import json
-import datetime
+from datetime import datetime
 from enum import Enum
 
 
@@ -25,11 +25,13 @@ class Book:
         :param title: название книги
         :param author: автор
         :param year: год издания
+        :raises ValueError:
         """
         self._id = 0
         self._title = title
         self._author = author
-        self._year = year
+        self._year = 0
+        self.year = year
         self._status: bool = False
 
     @property
@@ -80,7 +82,7 @@ class Book:
             val = int(val)
         except ValueError:
             raise ValueError("The year must be an integer")
-        now_year = datetime.datetime.now().year
+        now_year = datetime.now().year
         if val > now_year:
             raise ValueError("The year cannot be longer than the current year")
         self._year = val

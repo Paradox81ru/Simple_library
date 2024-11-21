@@ -56,6 +56,14 @@ class BookTest(unittest.TestCase):
 
     def test_edit_book_negative(self):
         """ Тестирует изменение книги негативный тест """
+        with self.assertRaises(ValueError) as cm:
+            _ = Book("Толковый словарь", "В.И. Даль", 2100)
+        self.assertEqual(cm.exception.args[0], "The year cannot be longer than the current year")
+
+        with self.assertRaises(ValueError) as cm:
+            _ = Book("Толковый словарь", "В.И. Даль", 'aaaa')
+        self.assertEqual(cm.exception.args[0], "The year must be an integer")
+
         book = Book("Толковый словарь", "В.И. Даль", 1982)
         self.assertEqual(book.id, 0)
 

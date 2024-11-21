@@ -1,3 +1,5 @@
+from book_manager import BookManager
+from book_repository import BookRepository
 from helper import clear_display
 from library_manager import LibraryManager
 import sys
@@ -31,7 +33,9 @@ class SimpleLibrary:
 
     def start(self):
         """ Запуск консоли """
-        library_manager = LibraryManager(self)
+        book_repository = BookRepository()
+        book_manager = BookManager(book_repository)
+        library_manager = LibraryManager(self, book_manager)
         while True:
             clear_display()
             print(f"{self.library_tile}\n")

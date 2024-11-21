@@ -1,12 +1,19 @@
 # from app import SimpleLibrary
+from datetime import datetime
+
+from book_manager import BookManager
 from exceptions import InputException
 from helper import clear_display
+from typing import final
 
 
 class LibraryManager:
     """ Класс управления библиотекой """
-    def __init__(self, library: 'SimpleLibrary'):
+    TRY_AGAIN: final = "Try again, or press '(c)cancel' to cancel input."
+
+    def __init__(self, library: 'SimpleLibrary', book_manager: BookManager):
         self._library = library
+        self._book_manager = book_manager
 
     def actions_handle(self, action_num: str):
         """ Обрабатывает выбранное действие """
@@ -28,8 +35,23 @@ class LibraryManager:
 
     def _add_book(self):
         """ Добавляет книгу в библиотеку """
+        # Запрашивает данные для добавления книги.
         clear_display()
-        self._print_result("Book is added")
+        title = input("Enter the title of the book: ")
+        clear_display()
+        author = input("Enter the author of the book: ")
+        clear_display()
+        try:
+            year = self._input_year()
+        except InputStop:
+            return
+
+        try:
+            # Добавляет книгу, и получает её идентификатор.
+            book_id = self._book_manager.add_book(title, author, year)
+            self._print_result(f"Book ID {book_id} is added")
+        except ValueError as err:
+            self._print_result(err.args[0])
 
     def _remove_book(self):
         """ Удаляет книгу из библиотеки """
@@ -66,8 +88,7 @@ class LibraryManager:
         clear_display()
         self._print_result("There is no such menu")
 
-    @classmethod
-    def _input_id(cls, msg):
+    def _input_id(self, msg):
         """ Запрос ввода идентификатора книги """
         while True:
             try:
@@ -77,13 +98,13 @@ class LibraryManager:
                 return int(num)
             except ValueError:
                 clear_display()
-                print("Error: The identifier must be a number. Try again, or press '(c)cancel' to cancel input.")
+                print(f"Error: The identifier must be a number. {self.TRY_AGAIN}")
 
     def _input_status(self):
         """
         Запрос ввода статуса
-        :return:
-        :raises InputException: Неверный статус
+        :return: статус
+        :raises InputStop: Отменить ввод
         """
         while True:
             try:
@@ -93,8 +114,28 @@ class LibraryManager:
                 return self._str_status_convert(status_str)
             except InputException:
                 clear_display()
-                print("Error: The status must be only a '(a)vailable' or '(g)iven_out'). "
-                      "Try again, or press '(c)cancel' to cancel input.")
+                print(f"Error: The status must be only a '(a)vailable' or '(g)iven_out'). {self.TRY_AGAIN}")
+
+    def _input_year(self):
+        """
+        Запрос ввода года издания
+        """
+        while True:
+            try:
+                year = input("Enter the year of publication of the book: ")
+                if year in ('c', 'cancel'):
+                    raise InputStop()
+                year = int(year)
+                now_year = datetime.now().year
+                # Проверка, что год выпуска не больше текущего года.
+                if year > now_year:
+                    clear_display()
+                    print(f"Error: The year cannot be longer than the current year. {self.TRY_AGAIN}")
+                    continue
+                return year
+            except ValueError:
+                clear_display()
+                print(f"Error: The year must be a number. {self.TRY_AGAIN}")
 
     @classmethod
     def _str_status_convert(cls, status_str) -> bool | None:
