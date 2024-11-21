@@ -1,5 +1,5 @@
 from helper import clear_display
-from manager import Manager
+from library_manager import LibraryManager
 import sys
 
 
@@ -11,10 +11,6 @@ class SimpleLibrary:
     SEARCH_BOOK = '3'
     DISPLAY_ALL_BOOKS = '4'
     CHANGE_BOOK_STATUS = '5'
-    QUIT = "q"
-
-    def __init__(self):
-        self._manager = Manager(self)
 
     @classmethod
     def run(cls):
@@ -28,17 +24,20 @@ class SimpleLibrary:
         print(f"{cls.SEARCH_BOOK}. Book Search")
         print(f"{cls.DISPLAY_ALL_BOOKS}. Displaying all books")
         print(f"{cls.CHANGE_BOOK_STATUS}. Changing the status of a book")
+        print(f"Press (q)uit to exit")
+        print("")
 
     def start(self):
         """ Запуск консоли """
+        library_manager = LibraryManager(self)
         while True:
             clear_display()
             print(f"{self.library_tile}\n")
             self.show_menu()
             action_num = input("Select a menu item: ")
-            if action_num.lower() == self.QUIT:
+            if action_num.lower() in ('q', 'quit'):
                 break
-            self._manager.actions_handle(action_num)
+            library_manager.actions_handle(action_num)
 
 
 if __name__ == "__main__":

@@ -2,23 +2,25 @@ from functools import partial
 import unittest
 
 from app import SimpleLibrary
-from manager import Manager, InputException
+from library_manager import LibraryManager, InputException
 
 
 class ManagerTest(unittest.TestCase):
     def setUp(self):
-        self.manager = Manager(SimpleLibrary())
+        self.manager = LibraryManager(SimpleLibrary())
 
     def test_str_status_convert_positive(self):
         """ Проверяет конвертацию вводимого параметра статуса книги """
-        for str_status, result in (('a', True), ('available', True),
+        for status_str, result in (('a', True), ('available', True),
                                    ('g', False), ('given_out', False)):
-
-            self.assertEquals(self.manager._str_status_convert(str_status), result)
+            with self.subTest(status_str=status_str, result=result):
+                self.assertEqual(self.manager._str_status_convert(status_str), result,
+                              msg=f"'{status_str}' is not convert to {result}")
 
     def test_str_status_convert_negative(self):
-        """ Проверяет вызов исключения при вводе неверного статуса """
+        """ Проверяет вызов исключения при вводе неверного статуса книги """
         for status_str in ('b', 'availabl', 'gi', 'given'):
-            with self.assertRaises(InputException, msg=f"'{status_str}' is not raises exception") as cm:
-                self.manager._str_status_convert(status_str)
-            self.assertEquals(cm.exception.message, f"Status '{status_str}' is invalid")
+            with self.subTest(str_status=status_str):
+                with self.assertRaises(InputException, msg=f"'{status_str}' is not raises exception") as cm:
+                    self.manager._str_status_convert(status_str)
+                self.assertEqual(cm.exception.message, f"Error: Status '{status_str}' is invalid")

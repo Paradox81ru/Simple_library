@@ -2,26 +2,28 @@
 from helper import clear_display
 
 
-class Manager:
+class LibraryManager:
     """ Класс управления библиотекой """
     def __init__(self, library: 'SimpleLibrary'):
         self._library = library
 
     def actions_handle(self, action_num: str):
         """ Обрабатывает выбранное действие """
-        match action_num:
+        match action_num.strip():
+            case '':
+                return
             case self._library.ADD_BOOK:
                 self._add_book()
             case self._library.REMOVE_BOOK:
                 self._remove_book()
             case self._library.SEARCH_BOOK:
-                print("Book is search")
+                self._search_book()
             case self._library.DISPLAY_ALL_BOOKS:
-                print("Displaying books")
+                self._display_all_books()
             case self._library.CHANGE_BOOK_STATUS:
-                print("Changed book status")
+                self._changed_book_status()
             case _:
-                print("There is no such menu")
+                self._invalid_menu()
 
     def _add_book(self):
         """ Добавляет книгу в библиотеку """
@@ -33,14 +35,14 @@ class Manager:
         clear_display()
         try:
             _id = self._input_id("Enter the ID of the book you want to delete: ")
-        except InputException as err:
-            self._print_result(err.message)
+        except InputStop:
             return
         self._print_result(f"Book {_id} is removed")
 
     def _search_book(self):
-        """ ПОиск книши """
-        print("Search is book")
+        """ Поиск книги """
+        clear_display()
+        self._print_result("Search is book")
 
     def _display_all_books(self):
         """ Отображает все книги из библиотеки """
@@ -51,21 +53,30 @@ class Manager:
         """ Изменяет статус книги """
         clear_display()
         try:
-            _id = self._input_id("Enter the ID of the book you want to delete: ")
+            _id = self._input_id("Enter the ID of the book whose status you want to change: ")
+            clear_display()
             status = self._input_status()
-        except InputException as err:
-            self._print_result(err.message)
+        except InputStop:
             return
-        self._print_result("Display all books")
-        print(f"The book {id} changed status {status} ")
+        self._print_result(f"The status of the book with ID {_id} changed to {status} ")
+
+    def _invalid_menu(self):
+        """ Сообщение при неверно выбранном меню """
+        clear_display()
+        self._print_result("There is no such menu")
 
     @classmethod
     def _input_id(cls, msg):
         """ Запрос ввода идентификатора книги """
-        try:
-            return int(input(msg))
-        except ValueError:
-            raise InputException("Error: The identifier must be a number")
+        while True:
+            try:
+                num = input(msg)
+                if num in ('c', 'cancel'):
+                    raise InputStop()
+                return int(num)
+            except ValueError:
+                clear_display()
+                print("Error: The identifier must be a number. Try again, or press '(c)cancel' to cancel input.")
 
     def _input_status(self):
         """
@@ -73,8 +84,16 @@ class Manager:
         :return:
         :raises InputException: Неверный статус
         """
-        status_str = input("Enter status (a)vailable or (g)iven_out").lower()
-        return self._str_status_convert(status_str)
+        while True:
+            try:
+                status_str = input("Enter status book (a)vailable or (g)iven_out: ").lower()
+                if status_str in ('c', 'cancel'):
+                    raise InputStop()
+                return self._str_status_convert(status_str)
+            except InputException:
+                clear_display()
+                print("Error: The status must be only a '(a)vailable' or '(g)iven_out'). "
+                      "Try again, or press '(c)cancel' to cancel input.")
 
     @classmethod
     def _str_status_convert(cls, status_str) -> bool | None:
@@ -90,7 +109,8 @@ class Manager:
             return False
         raise InputException(f"Error: Status '{status_str}' is invalid")
 
-    def _print_result(self, msg):
+    @classmethod
+    def _print_result(cls, msg):
         print(msg)
         input("press any key...")
 
@@ -103,3 +123,8 @@ class InputException(Exception):
     @property
     def message(self):
         return self._msg
+
+
+class InputStop(Exception):
+    """ Перкращение ввода данных """
+    pass
