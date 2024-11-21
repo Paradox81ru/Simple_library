@@ -4,7 +4,7 @@ from enum import Enum
 
 
 class BookStatus(Enum):
-    """ Статус книги """
+    """ Статус книги в библиотеке """
     AVAILABLE = True
     GIVEN_OUT = False
 
@@ -107,6 +107,10 @@ class Book:
     def is_available(self):
         """ Доступна ли книга """
         return self._status
+
+    def to_dict(self):
+        """ Преобразование данных в словарь """
+        return self.__dict__
 
     def to_json(self):
         """ Сериализация данных в JSON """

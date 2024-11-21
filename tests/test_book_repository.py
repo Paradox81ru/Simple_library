@@ -1,9 +1,11 @@
 import unittest
 import json
+from pathlib import Path
 
 from book import Book
 from book_repository import BookRepository
 from exceptions import BookRepositoryError
+import tempfile
 
 
 class BookRepositoryTest(unittest.TestCase):
@@ -19,7 +21,7 @@ class BookRepositoryTest(unittest.TestCase):
 
     def test_add_book(self):
         """ Проверяет добавление книг в репозиторий """
-        book_repository = BookRepository('filename.json')
+        book_repository = BookRepository()
         self.assertEqual(book_repository.number_of_books, 0)
         book_1 = self.books[0]
 
@@ -44,7 +46,7 @@ class BookRepositoryTest(unittest.TestCase):
 
     def test_remove_book(self):
         """ Проверяет удаление книг из репозитория """
-        book_repository = BookRepository('filename.json')
+        book_repository = BookRepository()
         # Репозиторий заполняется книгами
         for i, book in enumerate(self.books, start=3):
             book_repository.add_book(book)
@@ -76,7 +78,7 @@ class BookRepositoryTest(unittest.TestCase):
 
     def test_remove_book_negative(self):
         """ Проверяет удаление книг из репозитория негативный"""
-        book_repository = BookRepository('filename.json')
+        book_repository = BookRepository()
         # Репозиторий заполняется книгами
         for i, book in enumerate(self.books, start=3):
             book_repository.add_book(book)
@@ -91,7 +93,7 @@ class BookRepositoryTest(unittest.TestCase):
 
     def test_find_books(self):
         """ Проверяет поиск книг """
-        book_repository = BookRepository('filename.json')
+        book_repository = BookRepository()
         # Репозиторий заполняется книгами
         for i, book in enumerate(self.books, start=3):
             book_repository.add_book(book)
@@ -122,7 +124,7 @@ class BookRepositoryTest(unittest.TestCase):
 
     def test_not_find_books(self):
         """ Проверяет ненахождения книг """
-        book_repository = BookRepository('filename.json')
+        book_repository = BookRepository()
 
         # Проверка, что репозиторий пустой
         self.assertEqual(book_repository.number_of_books, 0)
@@ -152,7 +154,7 @@ class BookRepositoryTest(unittest.TestCase):
 
     def test_get_all_books(self):
         """ Проверяет возвращение всех книг из репозитория """
-        book_repository = BookRepository('filename.json')
+        book_repository = BookRepository()
         # Репозиторий заполняется книгами
         for i, book in enumerate(self.books, start=3):
             book_repository.add_book(book)
@@ -171,18 +173,81 @@ class BookRepositoryTest(unittest.TestCase):
             "Звездные войны. Возвращение джедая")
         self.assertSequenceEqual(tuple(book.title for book in books), expected_book_list)
 
-    def test_save_and_load_repository(self):
+    def test_save_import_and_export_repository(self):
         """ Проверяет удаление книг из репозитория негативный"""
         # book = self.books[0]
         # book.id = 2
         # print(book.to_json())
 
-        book_repository = BookRepository('filename.json')
+        book_repository = BookRepository()
         # Репозиторий заполняется книгами
         for i, book in enumerate(self.books, start=3):
             book_repository.add_book(book)
+
+        # Все книги в список простых объектов
+        repository_obj = book_repository._to_obj()
+
+        book_repository_1 = BookRepository()
+        self.assertEqual(book_repository_1.number_of_books, 0)
+        # Заполнение нового репозитория из списка простых объектов
+        book_repository_1._from_obj(repository_obj)
+        self.assertEqual(book_repository_1.number_of_books, 6)
+
+        # Все книги в JSON строку
         repository_json = book_repository._to_json()
 
-        new_book_repository = BookRepository('filename.json')
-        new_book_repository._from_json(repository_json)
-        self.assertEqual(new_book_repository.number_of_books, 6)
+        book_repository_2 = BookRepository()
+        self.assertEqual(book_repository_2.number_of_books, 0)
+        # Заполнение нового репозитория из json_строки
+        book_repository_2._from_json(repository_json)
+        self.assertEqual(book_repository_2.number_of_books, 6)
+
+    def test_save_and_load_repository(self):
+        """ Проверяет удаление книг из репозитория негативный"""
+        filename = 'book_repository.json'
+        with tempfile.TemporaryDirectory() as tmpdir:
+            filename = Path(tmpdir, filename)
+            # Проверяется, что файла с сохранёнными книгами ещё нет.
+            self.assertFalse(filename.exists())
+            book_repository = BookRepository()
+            # Репозиторий заполняется книгами
+            for i, book in enumerate(self.books, start=3):
+                book_repository.add_book(book)
+            number_of_books = len(self.books)
+            # Проверка, что репозиторий заполнен книгами.
+            self.assertEqual(book_repository.number_of_books, number_of_books)
+            book_repository.save(filename)
+            # После сохранения должен появиться файл с сохранёнными книгами.
+            self.assertTrue(filename.exists())
+
+            # Теперь создаётся другое хранилище книг,
+            other_book_repository = BookRepository()
+            # и загружаются книги.
+            other_book_repository.load(filename)
+            # Проверка, что в хранилище столько книг, сколько и должно быть.
+            self.assertEqual(other_book_repository.number_of_books, number_of_books)
+            self.assertSequenceEqual(
+                tuple(book.title for book in self.books),
+                tuple(book.title for book in other_book_repository.all_books))
+            last_id = number_of_books
+            # Проверяется, что последний идентификатор хранилища верный.
+            self.assertEqual(other_book_repository._last_id, number_of_books)
+            # Пробуется найти книги из другого хранилища
+            books = other_book_repository.find_book_by_author('Сергей Лукьяненко')
+            self.assertEqual(books[0].title, "Ночной дозор")
+            self.assertEqual(books[1].title, "Дневной дозор")
+
+            # Поиск книги по идентификатору, которого нет.
+            non_existent_book = other_book_repository.get_book_by_id(last_id + 1)
+            # Проверка, что ничего не найдено.
+            self.assertIsNone(non_existent_book)
+
+            # Теперь добавляется новая книга,
+            new_book = Book("Новая книга", "Неизвестный автор", 2000)
+            other_book_repository.add_book(new_book)
+            # а потом ищется по новому идентификатору.
+            find_new_book = other_book_repository.get_book_by_id(last_id + 1)
+            # Проверка, что книга найдена,
+            self.assertIsNotNone(find_new_book)
+            # и имеет новый идентификатор.
+            self.assertEqual(find_new_book.id, last_id + 1)

@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+from typing import Any
 
 from book import Book, BookStatus
 from exceptions import BookRepositoryError
@@ -7,18 +8,21 @@ from exceptions import BookRepositoryError
 
 class BookRepository:
     """ Хранилище книг """
-    def __init__(self, repository_filename):
-        self._filename = repository_filename
+    def __init__(self):
         self._last_id = 0
         self._books: dict[id, Book] = {}
 
-    def save(self):
+    def save(self, filename: Path):
         """ Сохраняет книги в файл """
-        with open(self._filename, 'w') as f:
-            json.dump()
+        with open(filename, 'w') as f:
+            json.dump(self._to_obj(), f)
 
-    def load(self):
+    def load(self, filename: Path):
         """ Загружает книги из файла """
+        if not Path(filename).exists():
+            raise BookRepositoryError(f"The file '{filename}' with the saved books was not found")
+        with open(filename, 'r') as f:
+            self._from_obj(json.load(f))
 
     @property
     def number_of_books(self) -> int:
@@ -50,6 +54,17 @@ class BookRepository:
         except KeyError:
             raise BookRepositoryError(f"The book with the ID {_id} is missing")
 
+    def get_book_by_id(self, _id: int) -> Book | None:
+        """
+        Получение книги по её идентификатору
+        :param _id: Идентификатор книги, которую требуется вернуть
+        :return: Найденная по указанному идентификатору книга или None, если книги с таим идентификатором нет.
+        """
+        try:
+            return self._books[_id]
+        except KeyError:
+            return None
+
     def find_book_by_author(self, author: str) -> tuple[Book]:
         """ Поиск книг по автору """
         return tuple(filter(lambda b: b.author == author, self._books.values()))
@@ -62,13 +77,12 @@ class BookRepository:
         """ Поиск книг по году издания """
         return tuple(filter(lambda b: b.year == year, self._books.values()))
 
-    def _to_json(self):
-        """ Преобразует список всех книг в json строку """
-        return f"[{','.join(book.to_json() for book in self.all_books)}]"
+    def _to_obj(self) -> list[dict[str: Any]]:
+        """ Преобразует список всех книг в список простых объект """
+        return [book.to_dict() for book in self.all_books]
 
-    def _from_json(self, data: str):
-        """ Заполняет хранилище по json строке """
-        obj_list = json.loads(data)
+    def _from_obj(self, obj_list):
+        """ Заполняет хранилище из списка простых объектов """
         last_id = 0
         for obj in obj_list:
             book = Book(obj['_title'], obj['_author'], int(obj['_year']))
@@ -80,7 +94,10 @@ class BookRepository:
                 last_id = book.id
         self._last_id = last_id
 
-    def _check_filename(self):
-        """ Проверяет наличие файла репозитория и создаёт при отсутствии """
-        if not self._filename.exists():
-            self._filename.touch()
+    def _to_json(self) -> str:
+        """ Преобразует список всех книг в json строку """
+        return json.dumps(self._to_obj())
+
+    def _from_json(self, _json: str):
+        """ Заполняет хранилище по json строке """
+        self._from_obj(json.loads(_json))
