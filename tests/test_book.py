@@ -50,6 +50,10 @@ class BookTest(unittest.TestCase):
         self.assertEqual(str(book), f"Book id 3, titled 'Большой толковый словарь' of the author "
                                     f"Владимир Иванович Даль 2001 edition, available")
 
+        # Изменение статуса логическим значением.
+        book.status = False
+        self.assertEqual(book.status.to_str(), 'given out')
+
     def test_edit_book_negative(self):
         """ Тестирует изменение книги негативный тест """
         book = Book("Толковый словарь", "В.И. Даль", 1982)
@@ -74,3 +78,7 @@ class BookTest(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             book.year = 2100
         self.assertEqual(cm.exception.args[0], "The year cannot be longer than the current year")
+
+        with self.assertRaises(ValueError) as cm:
+            book.status = 2
+        self.assertEqual(cm.exception.args[0], "The status must be a logical value")

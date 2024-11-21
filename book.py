@@ -101,10 +101,12 @@ class Book:
         """
         if isinstance(val, BookStatus):
             val = val.value
+        elif not isinstance(val, bool):
+            raise ValueError("The status must be a logical value")
         self._status = val
 
     @property
-    def is_available(self):
+    def is_available(self) -> bool:
         """ Доступна ли книга """
         return self._status
 
