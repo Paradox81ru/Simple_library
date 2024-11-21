@@ -12,6 +12,8 @@ class SimpleLibrary:
     DISPLAY_ALL_BOOKS = '4'
     CHANGE_BOOK_STATUS = '5'
 
+    REPOSITORY_FILENAME = "book_repository.json"
+
     @classmethod
     def run(cls):
         cls().start()

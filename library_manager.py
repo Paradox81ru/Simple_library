@@ -1,4 +1,5 @@
 # from app import SimpleLibrary
+from exceptions import InputException
 from helper import clear_display
 
 
@@ -115,16 +116,6 @@ class LibraryManager:
         input("press any key...")
 
 
-class InputException(Exception):
-    """ Ошибка ввода данных с консоли """
-    def __init__(self, msg):
-        self._msg = msg
-
-    @property
-    def message(self):
-        return self._msg
-
-
 class InputStop(Exception):
-    """ Перкращение ввода данных """
+    """ Окончание ввода данных """
     pass

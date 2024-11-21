@@ -1,11 +1,11 @@
-from functools import partial
 import unittest
 
 from app import SimpleLibrary
 from library_manager import LibraryManager, InputException
 
 
-class ManagerTest(unittest.TestCase):
+class LibraryManagerTest(unittest.TestCase):
+    """ Тестирование управление библиотекой """
     def setUp(self):
         self.manager = LibraryManager(SimpleLibrary())
 
