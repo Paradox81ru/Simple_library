@@ -13,17 +13,29 @@ class BookRepository(AbstractBookRepository):
         self._last_id = 0
         self._books: dict[id, Book] = {}
 
-    def save(self, filename: Path):
-        """ Сохраняет книги в файл """
+    def save(self, filename) -> int:
+        """
+        Сохраняет книги в файл
+        :param filename:
+        :return: Количество сохранённых книг
+        """
+        filename = Path(filename)
         with open(filename, 'w') as f:
-            json.dump(self._to_obj(), f)
+            json.dump(self._import(), f)
+        return self.number_of_books
 
-    def load(self, filename: Path):
-        """ Загружает книги из файла """
-        if not Path(filename).exists():
+    def load(self, filename) -> int:
+        """
+        Загружает книги из файла
+        :param filename:
+        :return: Количество загруженных книг
+        """
+        filename = Path(filename)
+        if not filename.exists():
             raise BookRepositoryError(f"The file '{filename}' with the saved books was not found")
         with open(filename, 'r') as f:
-            self._from_obj(json.load(f))
+            self._export(json.load(f))
+        return self.number_of_books
 
     @property
     def number_of_books(self) -> int:
@@ -35,18 +47,45 @@ class BookRepository(AbstractBookRepository):
         """ Возвращает всё книги из хранилища """
         return tuple(self._books.values())
 
-    def add_book(self, book: Book):
-        """ Добавляет книгу в репозиторий """
+    def add_book(self, book: Book) -> int:
+        """
+        Добавляет книгу в репозиторий
+        :param book: Добавляемая книга
+        :return: Идентификатор добавленной в репозиторий книги
+        """
         self._last_id += 1
         book.id = self._last_id
         book.status = BookStatus.AVAILABLE
         self._books[self._last_id] = book
+        return book.id
 
-    def remove_book(self, _id: int):
+    def changing_status_book(self, _id: int, status: BookStatus) -> Book:
+        """
+        Изменяет статус книги
+        :param _id: идентификатор книги, статус которой надо изменить
+        :param status: Новый статус книги
+        :return: Книга с изменённым статусом
+        :raises BookRepositoryError: Книга с указанным идентификатором отсутствует;
+                                     Статус должен быть логическим значением
+        """
+        if self.number_of_books == 0:
+            raise BookRepositoryError("It is impossible to changing status books because the repository is empty")
+        try:
+            book = self._books[_id]
+            book.status = status
+            return book
+        except KeyError:
+            raise BookRepositoryError(f"The book with the ID {_id} is missing")
+        except ValueError as err:
+            raise BookRepositoryError(err.args[0])
+
+    def remove_book(self, _id: int) -> Book:
         """
         Удаляет книгу из репозитория
-        :param _id: идентификатор удаляемой книги
-        :return: удалённая книга
+        :param _id: Идентификатор удаляемой книги.
+        :return: Удалённая книга.
+        :raises BookRepositoryError: Удалить книги невозможно, так как хранилище пустое;
+                                     Книга с указанным идентификатором отсутствует.
         """
         if self.number_of_books == 0:
             raise BookRepositoryError("It is impossible to delete books because the repository is empty")
@@ -75,14 +114,23 @@ class BookRepository(AbstractBookRepository):
         return tuple(filter(lambda b: title in b.title, self._books.values()))
 
     def find_book_by_year(self, year: int) -> tuple[Book]:
-        """ Поиск книг по году издания """
+        """
+        Поиск книг по году издания
+        :param year:
+        :return:
+        :raises BookRepositoryError: Ошибка при указании года выпуска книги
+        """
+        try:
+            year = int(year)
+        except ValueError:
+            raise BookRepositoryError("The year must be an integer")
         return tuple(filter(lambda b: b.year == year, self._books.values()))
 
-    def _to_obj(self) -> list[dict[str: Any]]:
+    def _import(self) -> list[dict[str: Any]]:
         """ Преобразует список всех книг в список простых объект """
         return [book.to_dict() for book in self.all_books]
 
-    def _from_obj(self, obj_list):
+    def _export(self, obj_list):
         """ Заполняет хранилище из списка простых объектов """
         last_id = 0
         for obj in obj_list:
@@ -97,8 +145,8 @@ class BookRepository(AbstractBookRepository):
 
     def _to_json(self) -> str:
         """ Преобразует список всех книг в json строку """
-        return json.dumps(self._to_obj())
+        return json.dumps(self._import())
 
     def _from_json(self, _json: str):
         """ Заполняет хранилище по json строке """
-        self._from_obj(json.loads(_json))
+        self._export(json.loads(_json))

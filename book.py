@@ -25,7 +25,7 @@ class Book:
         :param title: название книги
         :param author: автор
         :param year: год издания
-        :raises ValueError:
+        :raises ValueError:  Ошибка при указании года выпуска книги
         """
         self._id = 0
         self._title = title
@@ -77,7 +77,11 @@ class Book:
 
     @year.setter
     def year(self, val: int):
-        """ Год издания """
+        """
+        Год издания
+        :param val:
+        :raises ValueError: Ошибка при указании года выпуска книги
+        """
         try:
             val = int(val)
         except ValueError:
@@ -100,6 +104,7 @@ class Book:
         """
         Статус книги
         :param val: если True, то 'в наличии', иначе 'выдана'
+        :raises ValueError: Статус должен быть логическим значением
         """
         if isinstance(val, BookStatus):
             val = val.value

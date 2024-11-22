@@ -17,3 +17,8 @@ class InputException(SimpleLibraryException):
 class BookRepositoryError(SimpleLibraryException):
     """ Класс ошибки репозитория книг """
     pass
+
+
+class BookManagerError(SimpleLibraryException):
+    """ Класс ошибки менеджера книг """
+    pass
