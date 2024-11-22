@@ -128,7 +128,7 @@ class Book:
     def __str__(self):
         _id = f"id {self._id}, " if self._id > 0 else ""
         return (f"Book {_id}titled '{self._title}' of the author {self._author} {self._year} edition, "
-                f"{self.status.to_str()}")
+                f"status {self.status.to_str()}")
 
     def __repr__(self):
         return f"Book('{self._title}', '{self._author}', {self._year})"

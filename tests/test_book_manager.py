@@ -1,5 +1,7 @@
+import re
 import unittest
 
+from book import BookStatus
 from book_manager import BookManager
 from book_repository import BookRepository
 from enums import SearchCriteria
@@ -127,25 +129,27 @@ class BookRepositoryTest(unittest.TestCase):
 
         # Поиск книг по автору.
         books_num, result = book_manager.find_book(SearchCriteria.SEARCH_AUTHOR, 'Сергей Лукьяненко')
-        expected_result = ("Book id 2, titled 'Ночной дозор' of the author Сергей Лукьяненко 1998 edition, available\n"
-                           "Book id 3, titled 'Дневной дозор' of the author Сергей Лукьяненко 2000 edition, available")
+        expected_result = ("Book id 2, titled 'Ночной дозор' of the author Сергей Лукьяненко 1998 edition, "
+                           "status available\n"
+                           "Book id 3, titled 'Дневной дозор' of the author Сергей Лукьяненко 2000 edition, "
+                           "status available")
         self.assertEqual(result, expected_result)
         self.assertEqual(books_num, 2)
 
         # Поиск книг по заголовку.
         books_num, result = book_manager.find_book(SearchCriteria.SEARCH_TITLE, "Звездные войны")
         expected_result = ("Book id 4, titled 'Звездные войны. Новая надежда' "
-                           "of the author Алан Дин Фостер 1976 edition, available\n"
+                           "of the author Алан Дин Фостер 1976 edition, status available\n"
                            "Book id 5, titled 'Звездные войны. Империя наносит ответный удар' "
-                           "of the author Дональд Ф. 1980 edition, available\n"
+                           "of the author Дональд Ф. 1980 edition, status available\n"
                            "Book id 6, titled 'Звездные войны. Возвращение джедая' "
-                           "of the author Джеймс Кан 1983 edition, available")
+                           "of the author Джеймс Кан 1983 edition, status available")
         self.assertEqual(result, expected_result)
         self.assertEqual(books_num, 3)
 
         # Поиск книг по году выпуска.
         books_num, result = book_manager.find_book(SearchCriteria.SEARCH_YEAR, 1982)
-        expected_result = "Book id 1, titled 'Толковый словарь' of the author В.И. Даль 1982 edition, available"
+        expected_result = "Book id 1, titled 'Толковый словарь' of the author В.И. Даль 1982 edition, status available"
         self.assertEqual(result, expected_result)
         self.assertEqual(books_num, 1)
 
@@ -190,13 +194,67 @@ class BookRepositoryTest(unittest.TestCase):
         # Теперь создаётся заполненное хранилище книг.
         book_manager, book_repository = self._get_repository_filled_with_books()
         books_num, result = book_manager.get_all_books()
-        expected_result = """Book id 1, titled 'Толковый словарь' of the author В.И. Даль 1982 edition, available
-Book id 2, titled 'Ночной дозор' of the author Сергей Лукьяненко 1998 edition, available
-Book id 3, titled 'Дневной дозор' of the author Сергей Лукьяненко 2000 edition, available
-Book id 4, titled 'Звездные войны. Новая надежда' of the author Алан Дин Фостер 1976 edition, available
-Book id 5, titled 'Звездные войны. Империя наносит ответный удар' of the author Дональд Ф. 1980 edition, available
-Book id 6, titled 'Звездные войны. Возвращение джедая' of the author Джеймс Кан 1983 edition, available"""
+        expected_result = """Book id 1, titled 'Толковый словарь' of the author В.И. Даль 1982 edition, status available
+Book id 2, titled 'Ночной дозор' of the author Сергей Лукьяненко 1998 edition, status available
+Book id 3, titled 'Дневной дозор' of the author Сергей Лукьяненко 2000 edition, status available
+Book id 4, titled 'Звездные войны. Новая надежда' of the author Алан Дин Фостер 1976 edition, status available
+Book id 5, titled 'Звездные войны. Империя наносит ответный удар' of the author Дональд Ф. 1980 edition, status available
+Book id 6, titled 'Звездные войны. Возвращение джедая' of the author Джеймс Кан 1983 edition, status available"""
         # Проверка строки всех книг,
         self.assertEqual(result, expected_result)
         # и значения общего количества книг в хранилище.
         self.assertEqual(books_num, 6)
+
+    def test_changing_book_status(self):
+        """ Проверяет изменение статуса книги """
+        book_manager, _ = self._get_repository_filled_with_books()
+        # Ищется книга по году 2000, для удобства такая в хранилище сейчас одна.
+        books_str = book_manager.find_book(SearchCriteria.SEARCH_YEAR, 2000)
+        _id, status = self._get_id_and_status_from_book_str(books_str[1])
+        # Запоминается её идентификатор, и фиксируется статус, сейчас она в наличии.
+        self.assertEqual(_id, 3)
+        self.assertEqual(status, 'available')
+
+        # Изменяется статус книги по запомненному идентификатору.
+        book_manager.changing_status_book(_id, BookStatus.GIVEN_OUT)
+        # Снова поиск той же книги по году 2000.
+        books_str = book_manager.find_book(SearchCriteria.SEARCH_YEAR, 2000)
+        _id, status = self._get_id_and_status_from_book_str(books_str[1])
+        # Сверяется её идентификатор, и проверяется, что её статус изменился.
+        self.assertEqual(_id, 3)
+        self.assertEqual(status, 'given out')
+
+    def test_changing_book_status_negative(self):
+        """ Проверяет изменение статуса книги """
+        # Создаётся пустое хранилище.
+        book_repository = BookRepository()
+        book_manager = BookManager(book_repository)
+
+        # Проверка исключения при попытке изменить статус в пустом хранилище
+        with self.assertRaises(BookManagerError) as cm:
+            _ = book_manager.changing_status_book(2, BookStatus.GIVEN_OUT)
+        self.assertEqual(cm.exception.message,
+                         "It is impossible to changing status books because the repository is empty")
+
+        # Далее создаётся хранилище заполненное книгами.
+        book_manager, _ = self._get_repository_filled_with_books()
+        # Проверка исключения при попытке изменить статус несуществующей книге.
+        with self.assertRaises(BookManagerError) as cm:
+            _ = book_manager.changing_status_book(10, BookStatus.GIVEN_OUT)
+        self.assertEqual(cm.exception.message, "The book with the ID 10 is missing")
+
+        # Проверка исключения при попытке изменить статус на неправильный.
+        with self.assertRaises(BookManagerError) as cm:
+            _ = book_manager.changing_status_book(2, 3)
+        self.assertEqual(cm.exception.message, "The status must be a logical value")
+
+    def _get_id_and_status_from_book_str(self, book_str):
+        """
+        Выделяет из строкового обозначения книги её идентификатор и статус
+        :param book_str:
+        :return: Кортеж в формате (Идентификатор, статус)
+        """
+        pattern = r".*id\s(\d+).*status\s([\w\s]+)"
+        match = re.findall(pattern, book_str)
+        result = match[0]
+        return int(result[0]), result[1]

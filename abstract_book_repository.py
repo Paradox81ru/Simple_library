@@ -44,10 +44,12 @@ class AbstractBookRepository(ABC):
     def changing_status_book(self, _id: int, status: BookStatus) -> Book:
         """
         Изменяет статус книги
-        :param _id: идентификатор книги, статус которой надо изменить
-        :param status: Новый статус книги
-        :return: Книга с изменённым статусом
-        :raises BookRepositoryError: Книга с указанным идентификатором отсутствует.
+        :param _id: Идентификатор книги, статус которой надо изменить.
+        :param status: Новый статус книги.
+        :return: Книга с изменённым статусом.
+        :raises BookRepositoryError: Изменить статус книги невозможно, так как хранилище пустое;
+                                     Книга с указанным идентификатором отсутствует;
+                                     Статус должен быть логическим значением.
         """
         raise NotImplementedError()
 

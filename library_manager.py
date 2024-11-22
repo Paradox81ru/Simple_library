@@ -1,6 +1,7 @@
 # from app import SimpleLibrary
 from datetime import datetime
 
+from book import BookStatus
 from book_manager import BookManager
 from enums import SearchCriteria
 from exceptions import InputException, BookRepositoryError, BookManagerError
@@ -97,6 +98,8 @@ class LibraryManager:
             clear_display()
             print(f"{books_num} books found:")
             print_awaiting_message(result)
+        except BookManagerError as err:
+            print_awaiting_message(err.message)
         except ValueError as err:
             # 'get_criteria' может вызвать это исключение при неверном выборе критерия поиска.
             # Вообще код выше гарантирует правильное значение выбора критерия,
@@ -142,10 +145,16 @@ class LibraryManager:
         try:
             _id = self._input_id("Enter the ID of the book whose status you want to change: ")
             clear_display()
-            status = self._input_status()
+            input_status = self._input_status()
         except InputStop:
             return
-        print_awaiting_message(f"The status of the book with ID {_id} changed to {status} ")
+
+        try:
+            book_id, status = self._book_manager.changing_status_book(_id, input_status)
+            print_awaiting_message(f"The book with ID {book_id} now has the status {status}")
+        except BookManagerError as err:
+            print_awaiting_message(err.message)
+
 
     def _invalid_menu(self):
         """ Сообщение при неверно выбранном меню """
@@ -209,7 +218,7 @@ class LibraryManager:
                 print(f"Error: The year must be a number. {self.TRY_AGAIN}")
 
     @classmethod
-    def _str_status_convert(cls, status_str) -> bool | None:
+    def _str_status_convert(cls, status_str) -> BookStatus:
         """
         Конвертирует статус из строки в логический тип.
         :param status_str: Статус в виде строки.
@@ -217,9 +226,9 @@ class LibraryManager:
         :raises InputException: Неверный статус
         """
         if status_str in ('a', 'available'):
-            return True
+            return BookStatus.AVAILABLE
         elif status_str in ('g', 'given_out'):
-            return False
+            return BookStatus.GIVEN_OUT
         raise InputException(f"Error: Status '{status_str}' is invalid. "
                              f"The status must be only a '(a)vailable' or '(g)iven_out'.")
 

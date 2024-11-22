@@ -1,5 +1,5 @@
 from abstract_book_repository import AbstractBookRepository
-from book import Book
+from book import Book, BookStatus
 from enums import SearchCriteria
 from exceptions import BookManagerError, BookRepositoryError
 
@@ -76,7 +76,8 @@ class BookManager:
             case _:
                 raise BookManagerError("Invalid search criteria specified")
         count_books = len(books)
-        return (count_books, self.book_list_to_str(books)) if len(books) > 0 else (0, "Nothing was found for your query")
+        return (count_books, self._book_list_to_str(books)) if len(books) > 0 \
+            else (0, "Nothing was found for your query")
 
     def get_all_books(self) -> tuple[int, str]:
         """
@@ -85,10 +86,26 @@ class BookManager:
         """
         books = self._book_repository.all_books
         count_books = len(books)
-        return (count_books, self.book_list_to_str(books)) if len(books) > 0 \
+        return (count_books, self._book_list_to_str(books)) if len(books) > 0 \
             else (0, "There are no books to display in the storage")
 
+    def changing_status_book(self, _id: int, status: BookStatus) -> tuple[int, str]:
+        """
+        Изменяет статус книги.
+        :param _id: идентификатор книги, статус которой надо изменить.
+        :param status: Новый статус книги.
+        :return: Идентификатор книги и её новый статус.
+        :raises BookManagerError: Изменить статус книги невозможно, так как хранилище пустое;
+                                  Книга с указанным идентификатором отсутствует;
+                                  Статус должен быть логическим значением.
+        """
+        try:
+            book = self._book_repository.changing_status_book(_id, status)
+            return book.id, book.status.to_str()
+        except BookRepositoryError as err:
+            raise BookManagerError(err.message)
+
     # noinspection PyMethodMayBeStatic
-    def book_list_to_str(self, book_list: tuple[Book, ...]):
+    def _book_list_to_str(self, book_list: tuple[Book, ...]):
         """ Преобразует список книг в строку """
         return "\n".join(str(book) for book in book_list)

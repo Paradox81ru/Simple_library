@@ -10,7 +10,8 @@ class BookTest(unittest.TestCase):
         """ Тестирует создание книги и её строковое отображение """
         # Новая книга
         book = Book("Толковый словарь", "В.И. Даль", 1982)
-        self.assertEqual(str(book), f"Book titled 'Толковый словарь' of the author В.И. Даль 1982 edition, given out")
+        self.assertEqual(str(book), f"Book titled 'Толковый словарь' of the author В.И. Даль 1982 edition, "
+                                    f"status given out")
         self.assertEqual(repr(book), f"Book('Толковый словарь', 'В.И. Даль', 1982)")
         self.assertEqual(book.id, 0)
         self.assertFalse(book.is_available)
@@ -20,7 +21,7 @@ class BookTest(unittest.TestCase):
         book.id = 2
         book.status = True
         self.assertEqual(str(book), f"Book id 2, titled 'Толковый словарь' of the author "
-                                    f"В.И. Даль 1982 edition, available")
+                                    f"В.И. Даль 1982 edition, status available")
 
     def test_edit_book(self):
         """ Тестирует изменение книги позитивный """
@@ -48,7 +49,7 @@ class BookTest(unittest.TestCase):
         self.assertTrue(book.is_available)
         self.assertEqual(book.status.to_str(), 'available')
         self.assertEqual(str(book), f"Book id 3, titled 'Большой толковый словарь' of the author "
-                                    f"Владимир Иванович Даль 2001 edition, available")
+                                    f"Владимир Иванович Даль 2001 edition, status available")
 
         # Изменение статуса логическим значением.
         book.status = False
