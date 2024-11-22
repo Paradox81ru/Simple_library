@@ -4,7 +4,7 @@ from datetime import datetime
 from book_manager import BookManager
 from enums import SearchCriteria
 from exceptions import InputException, BookRepositoryError, BookManagerError
-from helper import clear_display
+from helper import clear_display, print_awaiting_message
 from typing import final
 
 
@@ -50,9 +50,9 @@ class LibraryManager:
         try:
             # Добавляет книгу, и получает её идентификатор.
             book_id = self._book_manager.add_book(title, author, year)
-            self._print_result(f"Book ID {book_id} is added")
+            print_awaiting_message(f"Book ID {book_id} is added")
         except BookManagerError as err:
-            self._print_result(err.message)
+            print_awaiting_message(err.message)
 
     def _remove_book(self):
         """ Удаляет книгу из библиотеки """
@@ -65,9 +65,9 @@ class LibraryManager:
         try:
             # Удаляет книгу, и получает её идентификатор.
             book_id = self._book_manager.remove_book(_id)
-            self._print_result(f"Book {book_id} is removed")
+            print_awaiting_message(f"Book {book_id} is removed")
         except BookManagerError as err:
-            self._print_result(err.message)
+            print_awaiting_message(err.message)
 
     def _search_book(self):
         """ Поиск книги """
@@ -93,10 +93,15 @@ class LibraryManager:
                     return
         try:
             search_num = SearchCriteria.get_criteria(search_num)
-            result = self._book_manager.find_book(search_num, search_str)
-            self._print_result(result)
+            books_num, result = self._book_manager.find_book(search_num, search_str)
+            clear_display()
+            print(f"{books_num} books found:")
+            print_awaiting_message(result)
         except ValueError as err:
-            self._print_result(err.args[0])
+            # 'get_criteria' может вызвать это исключение при неверном выборе критерия поиска.
+            # Вообще код выше гарантирует правильное значение выбора критерия,
+            # но все таки для гарантии ещё одна проверка.
+            print_awaiting_message(err.args[0])
 
     def _select_search_criterion(self) -> str:
         """
@@ -119,7 +124,7 @@ class LibraryManager:
                 continue
             # Если указан неверный пункт поиска, то заново запрашивается ввода пункта поиска.
             if search_num not in (SearchCriteria.SEARCH_TITLE, SearchCriteria.SEARCH_AUTHOR, SearchCriteria.SEARCH_YEAR):
-                self._print_result(f"There is no such search criterion. {self.TRY_AGAIN}")
+                print_awaiting_message(f"There is no such search criterion. {self.TRY_AGAIN}")
                 continue
             # Если ввод верный, то возвращается значение ввода.
             return search_num
@@ -127,7 +132,9 @@ class LibraryManager:
     def _display_all_books(self):
         """ Отображает все книги из библиотеки """
         clear_display()
-        self._print_result("Display all books")
+        count_num, all_books = self._book_manager.get_all_books()
+        print(f"There are {count_num} books in the library in total:")
+        print_awaiting_message(all_books)
 
     def _changed_book_status(self):
         """ Изменяет статус книги """
@@ -138,12 +145,12 @@ class LibraryManager:
             status = self._input_status()
         except InputStop:
             return
-        self._print_result(f"The status of the book with ID {_id} changed to {status} ")
+        print_awaiting_message(f"The status of the book with ID {_id} changed to {status} ")
 
     def _invalid_menu(self):
         """ Сообщение при неверно выбранном меню """
         clear_display()
-        self._print_result("There is no such menu")
+        print_awaiting_message("There is no such menu")
 
     def _input_id(self, msg):
         """
@@ -174,9 +181,9 @@ class LibraryManager:
                 if status_str in ('c', 'cancel'):
                     raise InputStop()
                 return self._str_status_convert(status_str)
-            except InputException:
+            except InputException as err:
                 clear_display()
-                print(f"Error: The status must be only a '(a)vailable' or '(g)iven_out'). {self.TRY_AGAIN}")
+                print(f"{err.message} {self.TRY_AGAIN}")
 
     def _input_year(self):
         """
@@ -213,12 +220,8 @@ class LibraryManager:
             return True
         elif status_str in ('g', 'given_out'):
             return False
-        raise InputException(f"Error: Status '{status_str}' is invalid")
-
-    @classmethod
-    def _print_result(cls, msg):
-        print(msg)
-        input("press any key...")
+        raise InputException(f"Error: Status '{status_str}' is invalid. "
+                             f"The status must be only a '(a)vailable' or '(g)iven_out'.")
 
 
 class InputStop(Exception):

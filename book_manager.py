@@ -10,12 +10,20 @@ class BookManager:
         self._book_repository = book_repository
 
     def load_data(self, filename):
-        """ Загружает данные в репозиторий """
-        self._book_repository.load(filename)
+        """
+        Загружает данные в репозиторий
+        :param filename: наименование файла для загрузки
+        :return: Количество загруженных книг
+        """
+        return self._book_repository.load(filename)
 
-    def save_data(self, filename):
-        """ Сохраняет данные из репозитория """
-        self._book_repository.save(filename)
+    def save_data(self, filename) -> int:
+        """
+         Сохраняет данные из репозитория
+        :param filename: наименование файла для сохранения
+        :return: Количество сохранённых книг
+        """
+        return self._book_repository.save(filename)
 
     def add_book(self, title: str, author: str, year: int) -> int:
         """
@@ -46,12 +54,12 @@ class BookManager:
         except BookRepositoryError as err:
             raise BookManagerError(err.message)
 
-    def find_book(self, search_criteria: SearchCriteria, search_val: str | int):
+    def find_book(self, search_criteria: SearchCriteria, search_val: str | int) -> tuple[int, str]:
         """
         Поиск книги
         :param search_criteria: Критерий поиска
         :param search_val: значение поиска
-        :return: Строковый список описаний найденных книг
+        :return: Кортеж в формате (Кол-во найденных книг, Строковый список найденных книг)
         :raises BookManagerError: Ошибка при указании года выпуска книги;
                                      Указан неверный критерий поиска
         """
@@ -67,9 +75,20 @@ class BookManager:
                     raise BookManagerError(err.args[0])
             case _:
                 raise BookManagerError("Invalid search criteria specified")
-        return "\n".join(str(book) for book in books) if len(books) > 0 else "Nothing was found for your query"
+        count_books = len(books)
+        return (count_books, self.book_list_to_str(books)) if len(books) > 0 else (0, "Nothing was found for your query")
 
-    def get_all_books(self):
-        """ Возвращает список всех книг из хранилища """
-        pass
+    def get_all_books(self) -> tuple[int, str]:
+        """
+        Возвращает общее кол-во книг и список всех книг из хранилища
+        :return: Кортеж в формате (Общее кол-во книг, строковый список всех книг)
+        """
+        books = self._book_repository.all_books
+        count_books = len(books)
+        return (count_books, self.book_list_to_str(books)) if len(books) > 0 \
+            else (0, "There are no books to display in the storage")
 
+    # noinspection PyMethodMayBeStatic
+    def book_list_to_str(self, book_list: tuple[Book, ...]):
+        """ Преобразует список книг в строку """
+        return "\n".join(str(book) for book in book_list)

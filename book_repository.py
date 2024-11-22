@@ -19,6 +19,9 @@ class BookRepository(AbstractBookRepository):
         :param filename:
         :return: Количество сохранённых книг
         """
+        # Сохранять книги надо только, если хранилище не пустое.
+        if self.number_of_books == 0:
+            return 0
         filename = Path(filename)
         with open(filename, 'w') as f:
             json.dump(self._import(), f)

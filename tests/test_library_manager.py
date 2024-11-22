@@ -24,7 +24,7 @@ class LibraryManagerTest(unittest.TestCase):
                                    ('g', False), ('given_out', False)):
             with self.subTest(status_str=status_str, result=result):
                 self.assertEqual(self.library_manager._str_status_convert(status_str), result,
-                              msg=f"'{status_str}' is not convert to {result}")
+                                 msg=f"'{status_str}' is not convert to {result}")
 
     def test_str_status_convert_negative(self):
         """ Проверяет вызов исключения при вводе неверного статуса книги """

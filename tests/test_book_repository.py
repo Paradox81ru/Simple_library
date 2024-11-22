@@ -267,7 +267,16 @@ class BookRepositoryTest(unittest.TestCase):
             filename = Path(tmpdir, filename)
             # Проверяется, что файла с сохранёнными книгами ещё нет.
             self.assertFalse(filename.exists())
-            # Создаётся заполненное хранилище книг.
+
+            # Создаётся пустое хранилище
+            book_repository = BookRepository()
+            save_num = book_repository.save(filename)
+            # Проверка, что при пустом хранилище количество сохранённых данных равно нулю,
+            self.assertEqual(save_num, 0)
+            # а так же, что при этом не создаётся файл с сохранениями.
+            self.assertFalse(filename.exists())
+
+            # Далее создаётся заполненное хранилище книг.
             book_repository = self._get_repository_filled_with_books()
             number_of_books = len(self.books)
             # Проверка, что хранилище заполнено книгами.

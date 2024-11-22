@@ -2,7 +2,7 @@ from pathlib import Path
 
 from book_manager import BookManager
 from book_repository import BookRepository
-from helper import clear_display
+from helper import clear_display, print_awaiting_message
 from library_manager import LibraryManager
 import sys
 
@@ -32,11 +32,15 @@ class SimpleLibrary:
         repository_file = Path(self.REPOSITORY_FILENAME)
         # Данные будут загружены, если файл для загрузки есть.
         if repository_file.exists():
-            self._book_manager.load_data(self.REPOSITORY_FILENAME)
+            load_num = self._book_manager.load_data(self.REPOSITORY_FILENAME)
+            print_awaiting_message(f'{load_num} books have been uploaded')
 
     def _save_data(self):
         """ Сохраняет данные из хранилища в файл """
-        self._book_manager.save_data(self.REPOSITORY_FILENAME)
+        save_num = self._book_manager.save_data(self.REPOSITORY_FILENAME)
+        if save_num > 0:
+            # Показывать сообщение, только если были данные для сохранения.
+            print(f"{save_num} books have been saved")
 
     def _show_menu(self):
         """ Отображает меню действий """
@@ -63,8 +67,8 @@ class SimpleLibrary:
 
     def _quit_handler(self):
         """ Обработка выхода из приложения """
-        self._save_data()
         clear_display()
+        self._save_data()
         input("Thank you for using our library. Good luck.")
 
 
