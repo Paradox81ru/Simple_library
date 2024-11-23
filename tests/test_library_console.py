@@ -8,8 +8,8 @@ from book_repository import BookRepository
 from library_console import LibraryConsole, InputException
 
 
-class LibraryManagerTest(unittest.TestCase):
-    """ Тестирование управление библиотекой """
+class LibraryConsoleTest(unittest.TestCase):
+    """ Тестирование библиотечной консоли """
     def setUp(self):
         book_manager = BookManager(BookRepository())
         self.library_manager = LibraryConsole(SimpleLibrary(), book_manager)
