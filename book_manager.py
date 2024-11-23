@@ -1,7 +1,7 @@
 from abstract_book_repository import AbstractBookRepository
 from book import Book, BookStatus
 from enums import SearchCriteria
-from exceptions import BookManagerError, BookRepositoryError
+from exceptions import BookManagerError, BookRepositoryError, ValidationError
 
 
 class BookManager:
@@ -19,8 +19,9 @@ class BookManager:
 
     def save_data(self, filename) -> int:
         """
-         Сохраняет данные из репозитория
-        :param filename: наименование файла для сохранения
+        Сохраняет данные из репозитория в файл.
+        Файл создаётся, только если хранилище не пустое.
+        :param filename: Наименование файла для сохранения.
         :return: Количество сохранённых книг
         """
         return self._book_repository.save(filename)
@@ -36,8 +37,8 @@ class BookManager:
         """
         try:
             new_book = Book(title, author, year)
-        except ValueError as err:
-            raise BookManagerError(err.args[0])
+        except ValidationError as err:
+            raise BookManagerError(err.message)
         self._book_repository.add_book(new_book)
         return new_book.id
 

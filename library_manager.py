@@ -4,9 +4,11 @@ from datetime import datetime
 from book import BookStatus
 from book_manager import BookManager
 from enums import SearchCriteria
-from exceptions import InputException, BookRepositoryError, BookManagerError
+from exceptions import InputException, BookRepositoryError, BookManagerError, ValidationError
 from helper import clear_display, print_awaiting_message
 from typing import final
+
+from validation import validation_id, validation_year
 
 
 class LibraryManager:
@@ -155,7 +157,6 @@ class LibraryManager:
         except BookManagerError as err:
             print_awaiting_message(err.message)
 
-
     def _invalid_menu(self):
         """ Сообщение при неверно выбранном меню """
         clear_display()
@@ -173,10 +174,10 @@ class LibraryManager:
                 num = input(msg).strip().lower()
                 if num in ('c', 'cancel'):
                     raise InputStop()
-                return int(num)
-            except ValueError:
+                return validation_id(num)
+            except ValidationError as err:
                 clear_display()
-                print(f"Error: The identifier must be a number. {self.TRY_AGAIN}")
+                print(f"Error: {err.message} {self.TRY_AGAIN}")
 
     def _input_status(self):
         """
@@ -192,6 +193,7 @@ class LibraryManager:
                 return self._str_status_convert(status_str)
             except InputException as err:
                 clear_display()
+                # Предупреждение о неверно введённом статусе книги.
                 print(f"{err.message} {self.TRY_AGAIN}")
 
     def _input_year(self):
@@ -205,17 +207,10 @@ class LibraryManager:
                 year = input("Enter the year of publication of the book: ").strip().lower()
                 if year in ('c', 'cancel'):
                     raise InputStop()
-                year = int(year)
-                now_year = datetime.now().year
-                # Проверка, что год выпуска не больше текущего года.
-                if year > now_year:
-                    clear_display()
-                    print(f"Error: The year cannot be longer than the current year. {self.TRY_AGAIN}")
-                    continue
-                return year
-            except ValueError:
+                return validation_year(year)
+            except ValidationError as err:
                 clear_display()
-                print(f"Error: The year must be a number. {self.TRY_AGAIN}")
+                print(f"Error: {err.message} {self.TRY_AGAIN}")
 
     @classmethod
     def _str_status_convert(cls, status_str) -> BookStatus:

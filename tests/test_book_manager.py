@@ -50,13 +50,13 @@ class BookRepositoryTest(unittest.TestCase):
         with self.assertRaises(BookManagerError) as cm:
             _ = book_manager.add_book("Толковый словарь", "В.И. Даль", 2100)
         # Проверка текста возникшей при этом ошибки.
-        self.assertEqual(cm.exception.args[0], "The year cannot be longer than the current year")
+        self.assertEqual(cm.exception.message, "The year cannot be longer than the current year.")
 
-        # Попытка добавить книгу с годом выпуска в виде текста.
+        # Попытка добавить книгу с текстом вместо года издания.
         with self.assertRaises(BookManagerError) as cm:
             _ = book_manager.add_book("Толковый словарь", "В.И. Даль", "aaaa")
         # Проверка текста возникшей при этом ошибки.
-        self.assertEqual(cm.exception.args[0], "The year must be an integer")
+        self.assertEqual(cm.exception.message, "The year must be an integer.")
 
     def test_remove_book(self):
         """ Проверяет удаление книги из репозитория через менеджер книг """
@@ -105,7 +105,7 @@ class BookRepositoryTest(unittest.TestCase):
         # Проверка ошибки, при попытке удалить книгу из пустого репозитория
         with self.assertRaises(BookManagerError) as cm:
             book_manager.remove_book(9)
-        self.assertEqual(cm.exception.message, "It is impossible to delete books because the repository is empty")
+        self.assertEqual(cm.exception.message, "It is impossible to delete books because the repository is empty.")
 
         # Далее репозиторий заполняется книгами.
         for book_data in self.books_data:
@@ -117,7 +117,7 @@ class BookRepositoryTest(unittest.TestCase):
         # Попытка удалить книгу, идентификатора которого нет.
         with self.assertRaises(BookManagerError) as cm:
             book_manager.remove_book(10)
-        self.assertEqual(cm.exception.message, f"The book with the ID 10 is missing")
+        self.assertEqual(cm.exception.message, f"The book with the ID 10 is missing.")
 
     def test_find_books(self):
         """ Проверяет поиск книг """
@@ -153,6 +153,12 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(result, expected_result)
         self.assertEqual(books_num, 1)
 
+        # Поиск книг по году выпуска указанному в текстовом виде.
+        books_num, result = book_manager.find_book(SearchCriteria.SEARCH_YEAR, '1983')
+        expected_result = "Book id 6, titled 'Звездные войны. Возвращение джедая' of the author Джеймс Кан 1983 edition, status available"
+        self.assertEqual(result, expected_result)
+        self.assertEqual(books_num, 1)
+
         # Проверяется, что несуществующие книги в репозитории не находится.
         expected_result = "Nothing was found for your query"
         books_num, result = book_manager.find_book(SearchCriteria.SEARCH_AUTHOR, "Джон Р. Р. Толкин")
@@ -177,7 +183,12 @@ class BookRepositoryTest(unittest.TestCase):
         # Проверка исключения при неверно указанном годе при поиске по году выпуска книги.
         with self.assertRaises(BookManagerError) as cm:
             _, _ = book_manager.find_book(SearchCriteria.SEARCH_YEAR, "dddd")
-        self.assertEqual(cm.exception.message, "The year must be an integer")
+        self.assertEqual(cm.exception.message, "The year must be an integer.")
+
+        # Проверка исключения при неверно указанном годе при поиске по году выпуска книги.
+        with self.assertRaises(BookManagerError) as cm:
+            _, _ = book_manager.find_book(SearchCriteria.SEARCH_YEAR, 2111)
+        self.assertEqual(cm.exception.message, "The year cannot be longer than the current year.")
 
     def test_get_all_books(self):
         """ Проверяет отображение всех книг из репозитория """
@@ -234,19 +245,19 @@ Book id 6, titled 'Звездные войны. Возвращение джед�
         with self.assertRaises(BookManagerError) as cm:
             _ = book_manager.changing_status_book(2, BookStatus.GIVEN_OUT)
         self.assertEqual(cm.exception.message,
-                         "It is impossible to changing status books because the repository is empty")
+                         "It is impossible to changing status books because the repository is empty.")
 
         # Далее создаётся хранилище заполненное книгами.
         book_manager, _ = self._get_repository_filled_with_books()
         # Проверка исключения при попытке изменить статус несуществующей книге.
         with self.assertRaises(BookManagerError) as cm:
             _ = book_manager.changing_status_book(10, BookStatus.GIVEN_OUT)
-        self.assertEqual(cm.exception.message, "The book with the ID 10 is missing")
+        self.assertEqual(cm.exception.message, "The book with the ID 10 is missing.")
 
         # Проверка исключения при попытке изменить статус на неправильный.
         with self.assertRaises(BookManagerError) as cm:
             _ = book_manager.changing_status_book(2, 3)
-        self.assertEqual(cm.exception.message, "The status must be a logical value")
+        self.assertEqual(cm.exception.message, "The status must be a logical value.")
 
     def _get_id_and_status_from_book_str(self, book_str):
         """

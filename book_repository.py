@@ -4,7 +4,8 @@ from typing import Any
 
 from abstract_book_repository import AbstractBookRepository
 from book import Book, BookStatus
-from exceptions import BookRepositoryError
+from exceptions import BookRepositoryError, ValidationError
+from validation import validation_year
 
 
 class BookRepository(AbstractBookRepository):
@@ -15,7 +16,8 @@ class BookRepository(AbstractBookRepository):
 
     def save(self, filename) -> int:
         """
-        Сохраняет книги в файл
+        Сохраняет книги в файл.
+        Файл создаётся, только если хранилище не пустое.
         :param filename:
         :return: Количество сохранённых книг
         """
@@ -72,16 +74,15 @@ class BookRepository(AbstractBookRepository):
                                      Книга с указанным идентификатором отсутствует;
                                      Статус должен быть логическим значением.
         """
-        if self.number_of_books == 0:
-            raise BookRepositoryError("It is impossible to changing status books because the repository is empty")
+        self._is_repository_empty('changing status')
         try:
             book = self._books[_id]
             book.status = status
             return book
         except KeyError:
-            raise BookRepositoryError(f"The book with the ID {_id} is missing")
-        except ValueError as err:
-            raise BookRepositoryError(err.args[0])
+            raise BookRepositoryError(f"The book with the ID {_id} is missing.")
+        except ValidationError as err:
+            raise BookRepositoryError(err.message)
 
     def remove_book(self, _id: int) -> Book:
         """
@@ -91,12 +92,11 @@ class BookRepository(AbstractBookRepository):
         :raises BookRepositoryError: Удалить книги невозможно, так как хранилище пустое;
                                      Книга с указанным идентификатором отсутствует.
         """
-        if self.number_of_books == 0:
-            raise BookRepositoryError("It is impossible to delete books because the repository is empty")
+        self._is_repository_empty('delete')
         try:
             return self._books.pop(_id)
         except KeyError:
-            raise BookRepositoryError(f"The book with the ID {_id} is missing")
+            raise BookRepositoryError(f"The book with the ID {_id} is missing.")
 
     def get_book_by_id(self, _id: int) -> Book | None:
         """
@@ -109,15 +109,15 @@ class BookRepository(AbstractBookRepository):
         except KeyError:
             return None
 
-    def find_book_by_author(self, author: str) -> tuple[Book]:
+    def find_book_by_author(self, author: str) -> tuple[Book, ...]:
         """ Поиск книг по автору """
         return tuple(filter(lambda b: b.author == author, self._books.values()))
 
-    def find_book_by_title(self, title: str) -> tuple[Book]:
+    def find_book_by_title(self, title: str) -> tuple[Book, ...]:
         """ Поиск книг по заголовку """
         return tuple(filter(lambda b: title in b.title, self._books.values()))
 
-    def find_book_by_year(self, year: int) -> tuple[Book]:
+    def find_book_by_year(self, year: int) -> tuple[Book, ...]:
         """
         Поиск книг по году издания
         :param year:
@@ -125,9 +125,9 @@ class BookRepository(AbstractBookRepository):
         :raises BookRepositoryError: Ошибка при указании года выпуска книги
         """
         try:
-            year = int(year)
-        except ValueError:
-            raise BookRepositoryError("The year must be an integer")
+            year = validation_year(year)
+        except ValidationError as err:
+            raise BookRepositoryError(err.message)
         return tuple(filter(lambda b: b.year == year, self._books.values()))
 
     def _import(self) -> list[dict[str: Any]]:
@@ -147,6 +147,7 @@ class BookRepository(AbstractBookRepository):
                 last_id = book.id
         self._last_id = last_id
 
+
     def _to_json(self) -> str:
         """ Преобразует список всех книг в json строку """
         return json.dumps(self._import())
@@ -154,3 +155,11 @@ class BookRepository(AbstractBookRepository):
     def _from_json(self, _json: str):
         """ Заполняет хранилище по json строке """
         self._export(json.loads(_json))
+
+    def _is_repository_empty(self, action: str):
+        """
+        Проверка на пустое хранилище.
+        :raises BookRepositoryError: Удалить книги невозможно, так как хранилище пустое
+        """
+        if self.number_of_books == 0:
+            raise BookRepositoryError(f"It is impossible to {action} books because the repository is empty.")

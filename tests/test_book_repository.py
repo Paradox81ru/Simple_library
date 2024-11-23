@@ -96,7 +96,7 @@ class BookRepositoryTest(unittest.TestCase):
         # Проверка ошибки, при попытке удалить книгу из пустого хранилища.
         with self.assertRaises(BookRepositoryError) as cm:
             book_repository.remove_book(9)
-        self.assertEqual(cm.exception.message, "It is impossible to delete books because the repository is empty")
+        self.assertEqual(cm.exception.message, "It is impossible to delete books because the repository is empty.")
 
         # Далее хранилище заполняется книгами.
         for i, book in enumerate(self.books, start=3):
@@ -108,7 +108,7 @@ class BookRepositoryTest(unittest.TestCase):
         # Попытка удалить книгу, идентификатора которого нет.
         with self.assertRaises(BookRepositoryError) as cm:
             book_repository.remove_book(10)
-        self.assertEqual(cm.exception.message, f"The book with the ID 10 is missing")
+        self.assertEqual(cm.exception.message, f"The book with the ID 10 is missing.")
 
     def test_find_books(self):
         """ Проверяет поиск книг """
@@ -137,6 +137,12 @@ class BookRepositoryTest(unittest.TestCase):
         # Проверка, что найдена одна книга.
         self.assertEqual(len(books), 1)
         self.assertEqual("Толковый словарь", books[0].title)
+
+        # Поиск книг по году издания указанном в текстовом виде.
+        books = book_repository.find_book_by_year('1983')
+        # Проверка, что найдена одна книга.
+        self.assertEqual(len(books), 1)
+        self.assertEqual("Звездные войны. Возвращение джедая", books[0].title)
 
     def test_not_find_books(self):
         """ Проверяет ненахождения книг """
@@ -172,10 +178,15 @@ class BookRepositoryTest(unittest.TestCase):
         """ Проверяет поиск книг негативный """
         book_repository = BookRepository()
 
-        # Проверяет исключение при попытке поиска книги по неправильно введённому году выпуска
+        # Проверяет исключение при попытке поиска книги по неправильно введённому году выпуска.
         with self.assertRaises(BookRepositoryError) as cm:
             _ = book_repository.find_book_by_year('dddd')
-        self.assertEqual(cm.exception.message, "The year must be an integer")
+        self.assertEqual(cm.exception.message, "The year must be an integer.")
+
+        # Проверяет исключение при попытке поиска книги по году выпуска больше текущего.
+        with self.assertRaises(BookRepositoryError) as cm:
+            _ = book_repository.find_book_by_year(2111)
+        self.assertEqual(cm.exception.message, "The year cannot be longer than the current year.")
 
     def test_get_all_books(self):
         """ Проверяет возвращение всех книг из репозитория """
@@ -224,19 +235,19 @@ class BookRepositoryTest(unittest.TestCase):
         with self.assertRaises(BookRepositoryError) as cm:
             _ = book_repository.changing_status_book(2, BookStatus.GIVEN_OUT)
         self.assertEqual(cm.exception.message,
-                         "It is impossible to changing status books because the repository is empty")
+                         "It is impossible to changing status books because the repository is empty.")
 
         # Далее хранилище заполняется книгами.
         book_repository = self._get_repository_filled_with_books()
         # Проверка исключения при попытке изменить статус несуществующей книге.
         with self.assertRaises(BookRepositoryError) as cm:
             _ = book_repository.changing_status_book(10, BookStatus.GIVEN_OUT)
-        self.assertEqual(cm.exception.message, "The book with the ID 10 is missing")
+        self.assertEqual(cm.exception.message, "The book with the ID 10 is missing.")
 
         # Проверка исключения при попытке изменить статус на неправильный.
         with self.assertRaises(BookRepositoryError) as cm:
             _ = book_repository.changing_status_book(2, 3)
-        self.assertEqual(cm.exception.message, "The status must be a logical value")
+        self.assertEqual(cm.exception.message, "The status must be a logical value.")
 
     def test_import_and_export_repository(self):
         """ Проверяет импорт и экспорт данных репозитория """

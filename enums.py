@@ -1,4 +1,4 @@
-from enum import StrEnum
+from enum import StrEnum, Enum
 
 
 class SearchCriteria(StrEnum):
@@ -24,3 +24,16 @@ class SearchCriteria(StrEnum):
                 return cls.SEARCH_YEAR
             case _:
                 raise ValueError("Invalid value of the search criteria")
+
+class BookStatus(Enum):
+    """ Статус книги в библиотеке """
+    AVAILABLE = True
+    GIVEN_OUT = False
+
+    def to_str(self):
+        return 'available' if self.value else 'given out'
+
+    @classmethod
+    def get_status(cls, status: bool):
+        """ Возвращает статус по логическому значению """
+        return cls.AVAILABLE if status else cls.GIVEN_OUT

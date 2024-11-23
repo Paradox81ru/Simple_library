@@ -1,20 +1,8 @@
 import json
 from datetime import datetime
-from enum import Enum
 
-
-class BookStatus(Enum):
-    """ Статус книги в библиотеке """
-    AVAILABLE = True
-    GIVEN_OUT = False
-
-    def to_str(self):
-        return 'available' if self.value else 'given out'
-
-    @classmethod
-    def get_status(cls, status: bool):
-        """ Возвращает статус по логическому значению """
-        return cls.AVAILABLE if status else cls.GIVEN_OUT
+from enums import BookStatus
+from validation import validation_id, validation_year, validation_status
 
 
 class Book:
@@ -25,7 +13,7 @@ class Book:
         :param title: название книги
         :param author: автор
         :param year: год издания
-        :raises ValueError:  Ошибка при указании года выпуска книги
+        :raises ValidationError:  Ошибка при указании года выпуска книги
         """
         self._id = 0
         self._title = title
@@ -41,14 +29,12 @@ class Book:
 
     @id.setter
     def id(self, val: int):
-        """ Идентификатор книги """
-        try:
-            val = int(val)
-        except ValueError:
-            raise ValueError("The identifier must be an integer")
-        if val < 1:
-            raise ValueError("The ID must be greater than zero")
-        self._id = val
+        """
+        Идентификатор книги
+        :param val:
+        :raises ValidationError: Ошибка проверки корректности идентификатора
+        """
+        self._id = validation_id(val)
 
     @property
     def title(self) -> str:
@@ -80,16 +66,9 @@ class Book:
         """
         Год издания
         :param val:
-        :raises ValueError: Ошибка при указании года выпуска книги
+        :raises ValidationError: Ошибка при указании года выпуска книги
         """
-        try:
-            val = int(val)
-        except ValueError:
-            raise ValueError("The year must be an integer")
-        now_year = datetime.now().year
-        if val > now_year:
-            raise ValueError("The year cannot be longer than the current year")
-        self._year = val
+        self._year = validation_year(val)
 
     @property
     def status(self) -> BookStatus:
@@ -104,13 +83,9 @@ class Book:
         """
         Статус книги
         :param val: если True, то 'в наличии', иначе 'выдана'
-        :raises ValueError: Статус должен быть логическим значением
+        :raises ValidationError: Статус должен быть логическим значением
         """
-        if isinstance(val, BookStatus):
-            val = val.value
-        elif not isinstance(val, bool):
-            raise ValueError("The status must be a logical value")
-        self._status = val
+        self._status = validation_status(val)
 
     @property
     def is_available(self) -> bool:
