@@ -151,6 +151,11 @@ class BookRepositoryTest(unittest.TestCase):
         # Проверка, что репозиторий заполнен книгами.
         self.assertEqual(book_repository.number_of_books, number_of_books)
 
+        # Получение информации о книге по её идентификатору.
+        result = book_manager.get_book_info_by_id(1)
+        expected_result = "Book id 1, titled 'Толковый словарь' of the author В.И. Даль 1982 edition, status available"
+        self.assertEqual(result, expected_result)
+
         # Поиск книг по автору.
         books_num, result = book_manager.find_book(SearchCriteria.SEARCH_AUTHOR, 'Сергей Лукьяненко')
         expected_result = ("Book id 2, titled 'Ночной дозор' of the author Сергей Лукьяненко 1998 edition, "
@@ -195,6 +200,10 @@ class BookRepositoryTest(unittest.TestCase):
         book_repository = BookRepository()
         book_manager = BookManager(book_repository)
 
+        # В пустом репозитории информация о книге по ID получена не будет, вернётся None.
+        result = book_manager.get_book_info_by_id(1)
+        self.assertIsNone(result)
+
         expected_result = "Nothing was found for your query"
         # Проверяется, что в пустом хранилище ничего не находится.
         books_num, result = book_manager.find_book(SearchCriteria.SEARCH_AUTHOR, 'Сергей Лукьяненко')
@@ -214,6 +223,10 @@ class BookRepositoryTest(unittest.TestCase):
         # Проверка, что репозиторий заполнен книгами.
         self.assertEqual(book_repository.number_of_books, len(self.books_data))
 
+        # При попытке получить информацию по ID о несуществующую книге, вернётся None.
+        result = book_manager.get_book_info_by_id(9)
+        self.assertIsNone(result)
+
         # Проверяется, что несуществующие книги в репозитории не находится.
         expected_result = "Nothing was found for your query"
         books_num, result = book_manager.find_book(SearchCriteria.SEARCH_AUTHOR, "Джон Р. Р. Толкин")
@@ -231,6 +244,21 @@ class BookRepositoryTest(unittest.TestCase):
     def test_find_books_negative(self):
         """ Проверяет поиск книг негативный """
         book_manager, _ = self._get_repository_filled_with_books()
+
+        # Проверяет исключение при попытке получить информацию о книге по-нулевому ID.
+        with self.assertRaises(BookManagerError) as cm:
+            _ = book_manager.get_book_info_by_id(0)
+        self.assertEqual(cm.exception.message, "The identifier must be greater than zero.")
+
+        # Проверяет исключение при попытке получить информацию о книге по-отрицательному ID.
+        with self.assertRaises(BookManagerError) as cm:
+            _ = book_manager.get_book_info_by_id(-1)
+        self.assertEqual(cm.exception.message, "The identifier must be greater than zero.")
+
+        # Проверяет исключение при попытке получить информацию о книге по ID строке
+        with self.assertRaises(BookManagerError) as cm:
+            _ = book_manager.get_book_info_by_id('q')
+        self.assertEqual(cm.exception.message, "The identifier must be an integer.")
 
         # Проверка исключения при неверно указанном критерии поиска
         with self.assertRaises(BookManagerError) as cm:

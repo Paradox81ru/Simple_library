@@ -70,6 +70,7 @@ class AbstractBookRepository(ABC):
         Получение книги по её идентификатору
         :param _id: Идентификатор книги, которую требуется вернуть
         :return: Найденная по указанному идентификатору книга или None, если книги с таим идентификатором нет.
+        :raises BookRepositoryError: Ошибка проверки корректности идентификатора
         """
         raise NotImplementedError()
 

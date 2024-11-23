@@ -5,14 +5,14 @@ import unittest
 from app import SimpleLibrary
 from book_manager import BookManager
 from book_repository import BookRepository
-from library_manager import LibraryManager, InputException
+from library_console import LibraryConsole, InputException
 
 
 class LibraryManagerTest(unittest.TestCase):
     """ Тестирование управление библиотекой """
     def setUp(self):
         book_manager = BookManager(BookRepository())
-        self.library_manager = LibraryManager(SimpleLibrary(), book_manager)
+        self.library_manager = LibraryConsole(SimpleLibrary(), book_manager)
 
     # @unittest.mock.patch('sys.stdout', new_callable=io.StringIO)
     # def assert_stdout(self, expected_output, mock_stdout):

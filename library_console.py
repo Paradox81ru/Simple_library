@@ -11,28 +11,63 @@ from typing import final
 from validation import validation_id, validation_year
 
 
-class LibraryManager:
+class LibraryConsole:
     """ Класс управления библиотекой """
-    TRY_AGAIN: final = "Try again, or press '(c)cancel' to cancel input."
+    PRESS_CANCEL = ", or press '(c)cancel' to cancel input"
+    TRY_AGAIN: final = f"Try again."
+
+    library_tile = "*** SIMPLE LIBRARY ***"
+
+    ADD_BOOK = '1'
+    REMOVE_BOOK = '2'
+    SEARCH_BOOK = '3'
+    DISPLAY_ALL_BOOKS = '4'
+    CHANGE_BOOK_STATUS = '5'
 
     def __init__(self, library: 'SimpleLibrary', book_manager: BookManager):
         self._library = library
         self._book_manager = book_manager
 
-    def actions_handle(self, action_num: str):
+    def _show_menu(self):
+        """ Отображает меню действий """
+        print(f"{self.ADD_BOOK}. Adding a book.")
+        print(f"{self.REMOVE_BOOK}. Deleting a book.")
+        print(f"{self.SEARCH_BOOK}. Book Search.")
+        print(f"{self.DISPLAY_ALL_BOOKS}. Displaying all books.")
+        print(f"{self.CHANGE_BOOK_STATUS}. Changing the status of a book.")
+        print(f"Press (q)uit to exit")
+        print("")
+
+    def start_console(self, quit_handler: callable):
+        """
+        Запуск консоли
+        :param quit_handler: Обработчик выхода из библиотеки
+        """
+        # Запрос выбора действия, пока не будет произведён выход из приложения.
+        while True:
+            clear_display()
+            print(f"{self.library_tile}\n")
+            self._show_menu()
+            action_num = input("Select a menu item: ").strip().lower()
+            if action_num in ('q', 'quit'):
+                quit_handler()
+                break
+            self._actions_handle(action_num)
+
+    def _actions_handle(self, action_num: str):
         """ Обрабатывает выбранное действие """
         match action_num.strip():
             case '':
                 return
-            case self._library.ADD_BOOK:
+            case self.ADD_BOOK:
                 self._add_book()
-            case self._library.REMOVE_BOOK:
+            case self.REMOVE_BOOK:
                 self._remove_book()
-            case self._library.SEARCH_BOOK:
+            case self.SEARCH_BOOK:
                 self._search_book()
-            case self._library.DISPLAY_ALL_BOOKS:
+            case self.DISPLAY_ALL_BOOKS:
                 self._display_all_books()
-            case self._library.CHANGE_BOOK_STATUS:
+            case self.CHANGE_BOOK_STATUS:
                 self._changed_book_status()
             case _:
                 self._invalid_menu()
@@ -61,14 +96,32 @@ class LibraryManager:
         """ Удаляет книгу из библиотеки """
         clear_display()
         try:
-            _id = self._input_id("Enter the ID of the book you want to delete: ")
+            _id = self._input_id(f"Enter the ID of the book you want to delete{self.PRESS_CANCEL}: ")
         except InputStop:
             return
 
         try:
-            # Удаляет книгу, и получает её идентификатор.
-            book_id = self._book_manager.remove_book(_id)
-            print_awaiting_message(f"Book {book_id} is removed")
+            # Перед удалением надо найти информацию об удаляемой книге.
+            book_info = self._book_manager.get_book_info_by_id(_id)
+            if book_info is None:
+                # И если книги с таким идентификатором нет, то нечего дальше и делать.
+                print_awaiting_message(f"The book with ID {_id} was not found.")
+                return
+
+            try:
+                # Иначе запрашивается подтверждение на удаление книги.
+                confirm = self._input_confirm("Are you sure you want to delete the next book?\n" + book_info)
+            except InputStop:
+                # Если отменил подтверждение, то сообщение, что книга удалена не будет.
+                print_awaiting_message(f"The book with ID {_id} will not be deleted.")
+                return
+            if confirm in  ('y', 'yes'):
+                # Если подтвердил, значит книга удаляется.
+                book_id = self._book_manager.remove_book(_id)
+                print_awaiting_message(f"The book with ID {book_id} has been deleted.")
+            else:
+                # Если не подтвердил, соответствующее сообщение.
+                print_awaiting_message(f"The book with ID {_id} will not be deleted.")
         except BookManagerError as err:
             print_awaiting_message(err.message)
 
@@ -117,7 +170,7 @@ class LibraryManager:
         # Запрос номера критерия поиска пока не будет правильный ввод или произведена отмена ввода.
         while True:
             clear_display()
-            print("By what criteria do you want to perform a search?")
+            print(f"By what criteria do you want to perform a search{self.PRESS_CANCEL}?")
             print(f"{SearchCriteria.SEARCH_TITLE}. Title.")
             print(f"{SearchCriteria.SEARCH_AUTHOR}. Author.")
             print(f"{SearchCriteria.SEARCH_YEAR}. Year.")
@@ -145,7 +198,7 @@ class LibraryManager:
         """ Изменяет статус книги """
         clear_display()
         try:
-            _id = self._input_id("Enter the ID of the book whose status you want to change: ")
+            _id = self._input_id(f"Enter the ID of the book whose status you want to change{self.PRESS_CANCEL}: ")
             clear_display()
             input_status = self._input_status()
         except InputStop:
@@ -153,10 +206,11 @@ class LibraryManager:
 
         try:
             book_id, status = self._book_manager.changing_status_book(_id, input_status)
-            print_awaiting_message(f"The book with ID {book_id} now has the status {status}")
+            print_awaiting_message(f"The book with ID {book_id} now has the status '{status}'")
         except BookManagerError as err:
             print_awaiting_message(err.message)
 
+    # noinspection PyMethodMayBeStatic
     def _invalid_menu(self):
         """ Сообщение при неверно выбранном меню """
         clear_display()
@@ -187,7 +241,7 @@ class LibraryManager:
         """
         while True:
             try:
-                status_str = input("Enter status book (a)vailable or (g)iven_out: ").strip().lower()
+                status_str = input(f"Enter status book (a)vailable or (g)iven_out{self.PRESS_CANCEL}: ").strip().lower()
                 if status_str in ('c', 'cancel'):
                     raise InputStop()
                 return self._str_status_convert(status_str)
@@ -204,13 +258,32 @@ class LibraryManager:
         """
         while True:
             try:
-                year = input("Enter the year of publication of the book: ").strip().lower()
+                year = input(f"Enter the year of publication of the book{self.PRESS_CANCEL}: ").strip().lower()
                 if year in ('c', 'cancel'):
                     raise InputStop()
                 return validation_year(year)
             except ValidationError as err:
                 clear_display()
                 print(f"Error: {err.message} {self.TRY_AGAIN}")
+
+    def _input_confirm(self, msg):
+        """
+        Запрос подтверждения Да или Нет
+        :param msg: Сообщение при подтверждении
+        :return: Подтверждение.
+        :raises InputStop: Отменить ввод
+        """
+        while True:
+            clear_display()
+            print(msg)
+            confirm = input(f"Select Yes/No{self.PRESS_CANCEL}: ").strip().lower()
+            if confirm in ('c', 'cancel'):
+                raise InputStop()
+
+            if confirm in ('y', 'yes', 'n', 'no'):
+                return confirm
+            else:
+                print_awaiting_message(f"You have to return 'Yes' or 'No'. {self.TRY_AGAIN}")
 
     @classmethod
     def _str_status_convert(cls, status_str) -> BookStatus:
@@ -224,7 +297,7 @@ class LibraryManager:
             return BookStatus.AVAILABLE
         elif status_str in ('g', 'given_out'):
             return BookStatus.GIVEN_OUT
-        raise InputException(f"Error: Status '{status_str}' is invalid. "
+        raise InputException(f"Status '{status_str}' is invalid. "
                              f"The status must be only a '(a)vailable' or '(g)iven_out'.")
 
 

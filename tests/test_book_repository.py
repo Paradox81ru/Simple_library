@@ -117,6 +117,10 @@ class BookRepositoryTest(unittest.TestCase):
         # Проверка, что репозиторий заполнен книгами
         self.assertEqual(book_repository.number_of_books, number_of_books)
 
+        # Получение книги по её идентификатору.
+        book = book_repository.get_book_by_id(1)
+        self.assertEqual(book.title, 'Толковый словарь')
+
         # Поиск книг по автору.
         books = book_repository.find_book_by_author("Сергей Лукьяненко")
         # Проверка, что найдено две книги
@@ -164,6 +168,10 @@ class BookRepositoryTest(unittest.TestCase):
         # Проверка, что репозиторий пустой
         self.assertEqual(book_repository.number_of_books, 0)
 
+        # В пустом репозитории книга по ID получена не будет, вернётся None.
+        book = book_repository.get_book_by_id(1)
+        self.assertIsNone(book)
+
         # Проверяется, что в пустом репозитории ничего не находится.
         books = book_repository.find_book_by_author("Сергей Лукьяненко")
         self.assertEqual(books, ())
@@ -178,6 +186,10 @@ class BookRepositoryTest(unittest.TestCase):
         number_of_books = len(self.books)
         # Проверка, что репозиторий заполнен книгами
         self.assertEqual(book_repository.number_of_books, number_of_books)
+
+        # При попытке получить несуществующую книгу по ID, вернётся None.
+        book = book_repository.get_book_by_id(9)
+        self.assertIsNone(book)
 
         # Проверяется, что несуществующие книги в репозитории не находится.
         books = book_repository.find_book_by_author("Джон Р. Р. Толкин")
@@ -202,6 +214,21 @@ class BookRepositoryTest(unittest.TestCase):
     def test_find_books_negative(self):
         """ Проверяет поиск книг негативный """
         book_repository = BookRepository()
+
+        # Проверяет исключение при попытке получить книгу по-нулевому ID.
+        with self.assertRaises(BookRepositoryError) as cm:
+            _ = book_repository.get_book_by_id(0)
+        self.assertEqual(cm.exception.message, "The identifier must be greater than zero.")
+
+        # Проверяет исключение при попытке получить книгу по-отрицательному ID.
+        with self.assertRaises(BookRepositoryError) as cm:
+            _ = book_repository.get_book_by_id(-1)
+        self.assertEqual(cm.exception.message, "The identifier must be greater than zero.")
+
+        # Проверяет исключение при попытке получить книгу по ID строке.
+        with self.assertRaises(BookRepositoryError) as cm:
+            _ = book_repository.get_book_by_id('q')
+        self.assertEqual(cm.exception.message, "The identifier must be an integer.")
 
         # Проверяет исключение при попытке поиска книги по неправильно введённому году выпуска.
         with self.assertRaises(BookRepositoryError) as cm:

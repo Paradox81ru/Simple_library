@@ -6,7 +6,7 @@ from typing import Any
 from abstract_book_repository import AbstractBookRepository
 from book import Book, BookStatus
 from exceptions import BookRepositoryError, ValidationError, BookRepositoryExportException
-from validation import validation_year
+from validation import validation_year, validation_id
 
 
 class BookRepository(AbstractBookRepository):
@@ -104,9 +104,12 @@ class BookRepository(AbstractBookRepository):
         Получение книги по её идентификатору
         :param _id: Идентификатор книги, которую требуется вернуть
         :return: Найденная по указанному идентификатору книга или None, если книги с таим идентификатором нет.
+        :raises BookRepositoryError: Ошибка проверки корректности идентификатора
         """
         try:
-            return self._books[_id]
+            return self._books[validation_id(_id)]
+        except ValidationError as err:
+            raise BookRepositoryError(err.message)
         except KeyError:
             return None
 

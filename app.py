@@ -3,29 +3,21 @@ from pathlib import Path
 from book_manager import BookManager
 from book_repository import BookRepository
 from helper import clear_display, print_awaiting_message
-from library_manager import LibraryManager
+from library_console import LibraryConsole
 import sys
 
 
 class SimpleLibrary:
-    library_tile = "*** SIMPLE LIBRARY ***"
-
-    ADD_BOOK = '1'
-    REMOVE_BOOK = '2'
-    SEARCH_BOOK = '3'
-    DISPLAY_ALL_BOOKS = '4'
-    CHANGE_BOOK_STATUS = '5'
-
     REPOSITORY_FILENAME = "book_repository.json"
 
     def __init__(self):
         self._book_manager = BookManager(BookRepository())
-        self._library_manager = LibraryManager(self, self._book_manager)
+        self._library_console = LibraryConsole(self, self._book_manager)
 
     def run(self):
         """ Запуск работы приложения """
         self._load_data()
-        self._start_console()
+        self._library_console.start_console(self._quit_handler)
 
     def _load_data(self):
         """ Загружает из файла данные в хранилище """
@@ -41,29 +33,6 @@ class SimpleLibrary:
         if save_num > 0:
             # Показывать сообщение, только если были данные для сохранения.
             print(f"{save_num} books have been saved")
-
-    def _show_menu(self):
-        """ Отображает меню действий """
-        print(f"{self.ADD_BOOK}. Adding a book.")
-        print(f"{self.REMOVE_BOOK}. Deleting a book.")
-        print(f"{self.SEARCH_BOOK}. Book Search.")
-        print(f"{self.DISPLAY_ALL_BOOKS}. Displaying all books.")
-        print(f"{self.CHANGE_BOOK_STATUS}. Changing the status of a book.")
-        print(f"Press (q)uit to exit")
-        print("")
-
-    def _start_console(self):
-        """ Запуск консоли """
-        # Запрос выбора действия, пока не будет произведён выход из приложения.
-        while True:
-            clear_display()
-            print(f"{self.library_tile}\n")
-            self._show_menu()
-            action_num = input("Select a menu item: ").strip().lower()
-            if action_num in ('q', 'quit'):
-                self._quit_handler()
-                break
-            self._library_manager.actions_handle(action_num)
 
     def _quit_handler(self):
         """ Обработка выхода из приложения """

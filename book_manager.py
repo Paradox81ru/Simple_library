@@ -55,6 +55,23 @@ class BookManager:
         except BookRepositoryError as err:
             raise BookManagerError(err.message)
 
+    def get_book_info_by_id(self, _id) -> str | None:
+        """
+        Возвращает информацию о книге по её идентификатору, или None, если книга не найдена.
+        :param _id:
+        :return:
+        :raises BookManagerError: Удалить книги невозможно, так как хранилище пусто;
+                                     Книга с указанным идентификатором отсутствует.
+        """
+        try:
+            book = self._book_repository.get_book_by_id(_id)
+            if book is None:
+                return None
+            else:
+                return str(self._book_repository.get_book_by_id(_id))
+        except BookRepositoryError as err:
+            raise BookManagerError(err.message)
+
     def find_book(self, search_criteria: SearchCriteria, search_val: str | int) -> tuple[int, str]:
         """
         Поиск книги
