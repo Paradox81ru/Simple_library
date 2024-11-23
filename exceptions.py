@@ -29,4 +29,15 @@ class BookManagerError(SimpleLibraryException):
 
 class ValidationError(SimpleLibraryException):
     """ Класс ошибки валидации """
-    pass
+    def __init__(self, msg: str, var_name: str, value):
+        super().__init__(msg)
+        self._var_name = var_name
+        self._value = value
+
+    @property
+    def var_name(self):
+        return self._var_name
+
+    @property
+    def value(self):
+        return self._value

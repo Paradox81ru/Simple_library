@@ -4,7 +4,7 @@ from pathlib import Path
 
 from book import Book, BookStatus
 from book_repository import BookRepository
-from exceptions import BookRepositoryError
+from exceptions import BookRepositoryError, BookRepositoryExportException
 import tempfile
 
 
@@ -132,6 +132,13 @@ class BookRepositoryTest(unittest.TestCase):
                               "Звездные войны. Возвращение джедая")
         self.assertEqual(tuple(book.title for book in books), expected_book_list)
 
+        # Поиск книги происходит по совпадению строки, поэтому даже по двум буквам произойдёт поиск.
+        books = book_repository.find_book_by_title("ые")
+        expected_book_list = ("Звездные войны. Новая надежда",
+                              "Звездные войны. Империя наносит ответный удар",
+                              "Звездные войны. Возвращение джедая")
+        self.assertEqual(tuple(book.title for book in books), expected_book_list)
+
         # Поиск книг по году издания.
         books = book_repository.find_book_by_year(1982)
         # Проверка, что найдена одна книга.
@@ -143,6 +150,12 @@ class BookRepositoryTest(unittest.TestCase):
         # Проверка, что найдена одна книга.
         self.assertEqual(len(books), 1)
         self.assertEqual("Звездные войны. Возвращение джедая", books[0].title)
+
+        # Поиск книг по году выпуска указанному в дробном виде.
+        books = book_repository.find_book_by_year(1980.9)
+        # Проверка, что найдена одна книга.
+        self.assertEqual(len(books), 1)
+        self.assertEqual("Звездные войны. Империя наносит ответный удар", books[0].title)
 
     def test_not_find_books(self):
         """ Проверяет ненахождения книг """
@@ -174,6 +187,18 @@ class BookRepositoryTest(unittest.TestCase):
         books = book_repository.find_book_by_year(1955)
         self.assertEqual(books, ())
 
+        # Проверяется, что при поиске по слишком короткому автору исключения нет, просто ничего не находит.
+        books = book_repository.find_book_by_author("Д")
+        self.assertEqual(books, ())
+
+        # По пустому запросу автора, так же ничего не находит.
+        books = book_repository.find_book_by_author("")
+        self.assertEqual(books, ())
+
+        # По пустому запросу наименования книги, так же ничего не находит.
+        books = book_repository.find_book_by_title("")
+        self.assertEqual(books, ())
+
     def test_find_books_negative(self):
         """ Проверяет поиск книг негативный """
         book_repository = BookRepository()
@@ -181,6 +206,11 @@ class BookRepositoryTest(unittest.TestCase):
         # Проверяет исключение при попытке поиска книги по неправильно введённому году выпуска.
         with self.assertRaises(BookRepositoryError) as cm:
             _ = book_repository.find_book_by_year('dddd')
+        self.assertEqual(cm.exception.message, "The year must be an integer.")
+
+        # Проверяет исключение при попытке поиска книги по году выпуска указанному в виде дроби, то в текстовом виде.
+        with self.assertRaises(BookRepositoryError) as cm:
+            _ = book_repository.find_book_by_year('1701.4')
         self.assertEqual(cm.exception.message, "The year must be an integer.")
 
         # Проверяет исключение при попытке поиска книги по году выпуска больше текущего.
@@ -270,6 +300,137 @@ class BookRepositoryTest(unittest.TestCase):
         # Заполнение нового хранилища из json_строки
         book_repository_2._from_json(repository_json)
         self.assertEqual(book_repository_2.number_of_books, 6)
+
+    def test_export_repository_negative(self):
+        """ Проверяет экспорт данных репозитория негативный """
+        book_repository = self._get_repository_filled_with_books()
+
+        # Импорт всех книг в список простых объектов.
+        repository_obj = book_repository._import()
+        # Создание нового хранилища.
+        book_repository_1 = BookRepository()
+
+        # Подмена в данных идентификатора на пустой.
+        repository_obj[5]['_id'] = ''
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 6. The identifier must be an integer.: id = ")
+
+        # Подмена в данных идентификатора на текстовый дробный.
+        repository_obj[4]['_id'] = '6.2'
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 5. The identifier must be an integer.: id = 6.2")
+
+        # Подмена в данных идентификатора на строку.
+        repository_obj[3]['_id'] = 'q'
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 4. The identifier must be an integer.: id = q")
+
+        # Подмена в данных идентификатора на ноль.
+        repository_obj[2]['_id'] = 0
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 3. The identifier must be greater than zero.: id = 0")
+
+        # Подмена в данных идентификатора на число меньше нуля.
+        repository_obj[1]['_id'] = -1
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 2. The identifier must be greater than zero.: id = -1")
+
+        # Заново импорт всех книги в список простых объектов.
+        repository_obj = book_repository._import()
+
+        # Подмена в данных года на пустой.
+        repository_obj[5]['_year'] = ''
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 6. The year must be an integer.: year = ")
+
+        # Подмена в данных года на текстовый дробный.
+        repository_obj[4]['_year'] = '2000.1'
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 5. The year must be an integer.: year = 2000.1")
+
+        # Подмена в данных года на строку.
+        repository_obj[3]['_year'] = 'qqqq'
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 4. The year must be an integer.: year = qqqq")
+
+        # Подмена в данных года на больше текущего года.
+        repository_obj[2]['_year'] = 2100
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 3. The year cannot be longer than the current year.: year = 2100")
+
+        # И ещё раз импорт всех книги в список простых объектов.
+        repository_obj = book_repository._import()
+
+        # Подмена в данных статус на пустой.
+        repository_obj[5]['_status'] = ''
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 6. The status must be a logical value.: status = ")
+
+        # Подмена в данных статус на число.
+        repository_obj[4]['_status'] = 2
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 5. The status must be a logical value.: status = 2")
+
+        # Подмена в данных статус на строку.
+        repository_obj[3]['_status'] = 'true'
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 4. The status must be a logical value.: status = true")
+
+        # Подмена в данных заголовка на слишком короткий.
+        repository_obj[2]["_title"] =  'По'
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 3. "
+                         "The length of the book title should be from 3 to 50 characters.: title = По")
+
+        # Подмена в данных автора на слишком короткий.
+        repository_obj[1]["_author"] =  'а'
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 2. "
+                         "The length of the book author should be from 2 to 25 characters.: author = а")
+
+        # Подмена в данных автора на слишком длинный.
+        repository_obj[1]["_author"] =  'абвгдуёжзиклмнопрстуфхцчшщ'
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 2. "
+                         "The length of the book author should be from 2 to 25 characters.: author = абвгдуёжзиклмнопрстуфхцчшщ")
+
+        # Вообще удаление из данных информацию об авторе.
+        del  repository_obj[1]["_author"]
+        with self.assertRaises(BookRepositoryExportException) as cm:
+            book_repository_1._export(repository_obj)
+        self.assertEqual(cm.exception.message,
+                         "Error when exporting books number 2. The author data is missing")
+
 
     def test_save_and_load_repository(self):
         """ Проверяет удаление книг из репозитория негативный"""

@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 from enums import BookStatus
-from validation import validation_id, validation_year, validation_status
+from validation import validation_id, validation_year, validation_status, validation_title, validation_author
 
 
 class Book:
@@ -13,11 +13,13 @@ class Book:
         :param title: название книги
         :param author: автор
         :param year: год издания
-        :raises ValidationError:  Ошибка при указании года выпуска книги
+        :raises ValidationError: Ошибка при указании заголовка, автора или года выпуска книги
         """
         self._id = 0
-        self._title = title
-        self._author = author
+        self._title = ''
+        self.title = title
+        self._author = ''
+        self.author = author
         self._year = 0
         self.year = year
         self._status: bool = False
@@ -43,8 +45,12 @@ class Book:
 
     @title.setter
     def title(self, val: str):
-        """ Название книги """
-        self._title = val
+        """
+        Название книги
+        :param val:
+        :raises ValidationError: Ошибка проверки корректности заголовка
+        """
+        self._title = validation_title(val)
 
     @property
     def author(self) -> str:
@@ -53,8 +59,12 @@ class Book:
 
     @author.setter
     def author(self, val: str):
-        """ Автор """
-        self._author = val
+        """
+        Автор
+        :param val:
+        :raises ValidationError: Ошибка проверки корректности автора
+        """
+        self._author = validation_author(val)
 
     @property
     def year(self) -> int:

@@ -94,15 +94,50 @@ class BookTest(unittest.TestCase):
 
     def test_edit_book_negative(self):
         """ Тестирует изменение книги негативный тест """
+        # Попытка создание книги со слишком коротким заголовком.
+        with self.assertRaises(ValidationError) as cm:
+            _ = Book("То", "В.И. Даль", 1988)
+        self.assertEqual(cm.exception.message,
+                         "The length of the book title should be from 3 to 50 characters.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('title', 'То'))
+
+        # Попытка создание книги со слишком коротким автором.
+        with self.assertRaises(ValidationError) as cm:
+            _ = Book("Толковый словарь", "В", 1988)
+        self.assertEqual(cm.exception.message,
+                         "The length of the book author should be from 2 to 25 characters.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('author', 'В'))
+
+        # Попытка создание книги со слишком длинным автором.
+        with self.assertRaises(ValidationError) as cm:
+            _ = Book("Толковый словарь", "абвгдуёжзиклмнопрстуфхцчшщ", 1988)
+        self.assertEqual(cm.exception.message,
+                         "The length of the book author should be from 2 to 25 characters.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('author', 'абвгдуёжзиклмнопрстуфхцчшщ'))
+
+        # Попытка создание книги с пустым годом издания.
+        with self.assertRaises(ValidationError) as cm:
+            _ = Book("Толковый словарь", "В.И. Даль", '')
+        self.assertEqual(cm.exception.message, "The year must be an integer.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('year', ''))
+
         # Попытка создание книги с годом больше текущего.
         with self.assertRaises(ValidationError) as cm:
             _ = Book("Толковый словарь", "В.И. Даль", 2100)
-        self.assertEqual(cm.exception.args[0], "The year cannot be longer than the current year.")
+        self.assertEqual(cm.exception.message, "The year cannot be longer than the current year.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('year', 2100))
 
         # Попытка создание книги с текстом вместо года издания.
         with self.assertRaises(ValidationError) as cm:
             _ = Book("Толковый словарь", "В.И. Даль", 'aaaa')
-        self.assertEqual(cm.exception.args[0], "The year must be an integer.")
+        self.assertEqual(cm.exception.message, "The year must be an integer.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('year', 'aaaa'))
+
+        # Попытка создание книги с дробными значением года в текстовом виде.
+        with self.assertRaises(ValidationError) as cm:
+            _ = Book("Толковый словарь", "В.И. Даль", '1988.8')
+        self.assertEqual(cm.exception.message, "The year must be an integer.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('year', '1988.8'))
 
         # Создаётся корректная книга для дальнейшей проверки.
         book = Book("Толковый словарь", "В.И. Даль", 1982)
@@ -111,33 +146,53 @@ class BookTest(unittest.TestCase):
         # Попытка изменение книге идентификатор на текстовое значение.
         with self.assertRaises(ValidationError) as cm:
             book.id = 'a'
-        self.assertEqual(cm.exception.args[0], "The identifier must be an integer.")
+        self.assertEqual(cm.exception.message, "The identifier must be an integer.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('id', 'a'))
+
+        # Попытка изменения книге идентификатор на дробное значение, но в текстовом виде.
+        with self.assertRaises(ValidationError) as cm:
+            book.id = '8.1'
+        self.assertEqual(cm.exception.message, "The identifier must be an integer.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('id', '8.1'))
 
         # Попытка изменение книге идентификатор на ноль.
         with self.assertRaises(ValidationError) as cm:
             book.id = 0
-        self.assertEqual(cm.exception.args[0], "The identifier must be greater than zero.")
+        self.assertEqual(cm.exception.message, "The identifier must be greater than zero.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('id', 0))
 
         # Попытка изменение книге идентификатор на дробное значение между нулём и единицей.
         with self.assertRaises(ValidationError) as cm:
             book.id = 0.9
-        self.assertEqual(cm.exception.args[0], "The identifier must be greater than zero.")
+        self.assertEqual(cm.exception.message, "The identifier must be greater than zero.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('id', 0.9))
 
         # Попытка изменение книге идентификатор на отрицательное значение.
         with self.assertRaises(ValidationError) as cm:
             book.id = -1
-        self.assertEqual(cm.exception.args[0], "The identifier must be greater than zero.")
+        self.assertEqual(cm.exception.message, "The identifier must be greater than zero.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('id', -1))
 
         # Попытка изменение книге года на текстовое значение.
         with self.assertRaises(ValidationError) as cm:
             book.year = 'ddd'
-        self.assertEqual(cm.exception.args[0], "The year must be an integer.")
+        self.assertEqual(cm.exception.message, "The year must be an integer.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('year', 'ddd'))
+
+        # Попытка установить год в виде текстового дробного числа.
+        with self.assertRaises(ValidationError) as cm:
+            book.year = '1988.5'
+        self.assertEqual(cm.exception.message, "The year must be an integer.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('year', '1988.5'))
 
         # Попытка установить год больше текущего года.
         with self.assertRaises(ValidationError) as cm:
             book.year = 2100
-        self.assertEqual(cm.exception.args[0], "The year cannot be longer than the current year.")
+        self.assertEqual(cm.exception.message, "The year cannot be longer than the current year.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('year', 2100))
 
+        # Попытка установить неправильное значение статуса.
         with self.assertRaises(ValidationError) as cm:
             book.status = 2
-        self.assertEqual(cm.exception.args[0], "The status must be a logical value.")
+        self.assertEqual(cm.exception.message, "The status must be a logical value.")
+        self.assertEqual((cm.exception.var_name, cm.exception.value), ('status', 2))

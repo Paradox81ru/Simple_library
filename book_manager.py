@@ -93,7 +93,7 @@ class BookManager:
     def changing_status_book(self, _id: int, status: BookStatus) -> tuple[int, str]:
         """
         Изменяет статус книги.
-        :param _id: идентификатор книги, статус которой надо изменить.
+        :param _id: Идентификатор книги, статус которой надо изменить.
         :param status: Новый статус книги.
         :return: Идентификатор книги и её новый статус.
         :raises BookManagerError: Изменить статус книги невозможно, так как хранилище пустое;

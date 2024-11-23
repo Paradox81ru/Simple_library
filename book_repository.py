@@ -1,10 +1,11 @@
+from copy import copy
 from pathlib import Path
 import json
 from typing import Any
 
 from abstract_book_repository import AbstractBookRepository
 from book import Book, BookStatus
-from exceptions import BookRepositoryError, ValidationError
+from exceptions import BookRepositoryError, ValidationError, BookRepositoryExportException
 from validation import validation_year
 
 
@@ -111,10 +112,15 @@ class BookRepository(AbstractBookRepository):
 
     def find_book_by_author(self, author: str) -> tuple[Book, ...]:
         """ Поиск книг по автору """
+        author = author.strip()
         return tuple(filter(lambda b: b.author == author, self._books.values()))
 
     def find_book_by_title(self, title: str) -> tuple[Book, ...]:
         """ Поиск книг по заголовку """
+        title = title.strip()
+        # При пустом запросе должен вернуться пустой кортеж
+        if title == "":
+            return ()
         return tuple(filter(lambda b: title in b.title, self._books.values()))
 
     def find_book_by_year(self, year: int) -> tuple[Book, ...]:
@@ -132,19 +138,28 @@ class BookRepository(AbstractBookRepository):
 
     def _import(self) -> list[dict[str: Any]]:
         """ Преобразует список всех книг в список простых объект """
-        return [book.to_dict() for book in self.all_books]
+        return [copy(book.to_dict()) for book in self.all_books]
 
     def _export(self, obj_list):
         """ Заполняет хранилище из списка простых объектов """
         last_id = 0
-        for obj in obj_list:
-            book = Book(obj['_title'], obj['_author'], int(obj['_year']))
-            book.id = int(obj['_id'])
-            book.status = BookStatus.get_status(obj['_status'])
-            self._books[book.id] = book
-            # Сразу же ищется самый последний (он же самый большой) идентификатор.
-            if book.id > last_id:
-                last_id = book.id
+        i = 1
+        try:
+            for obj in obj_list:
+                book = Book(obj['_title'], obj['_author'], obj['_year'])
+                book.id = obj['_id']
+                book.status = obj['_status']
+                self._books[book.id] = book
+                # Сразу же ищется самый последний (он же самый большой) идентификатор.
+                if book.id > last_id:
+                    last_id = book.id
+                i += 1
+        except ValidationError as err:
+            self._books = {}
+            raise BookRepositoryExportException(f"Error when exporting books number {i}. "
+                                                f"{err.message}: {err.var_name} = {err.value}")
+        except KeyError as err:
+            raise BookRepositoryExportException(f"Error when exporting books number {i}. The {err.args[0][1:]} data is missing")
         self._last_id = last_id
 
 

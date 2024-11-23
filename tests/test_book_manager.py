@@ -46,6 +46,24 @@ class BookRepositoryTest(unittest.TestCase):
         """ Проверяет добавление книг в репозиторий негативный """
         book_manager = BookManager(BookRepository())
 
+        # Попытка добавить книгу со слишком коротким заголовком.
+        with self.assertRaises(BookManagerError) as cm:
+            _ = book_manager.add_book("То", "В.И. Даль", 1982)
+        # Проверка текста возникшей при этом ошибки.
+        self.assertEqual(cm.exception.message, "The length of the book title should be from 3 to 50 characters.")
+
+        # Попытка добавить книгу со слишком коротким автором.
+        with self.assertRaises(BookManagerError) as cm:
+            _ = book_manager.add_book("Толковый словарь", "В", 1982)
+        # Проверка текста возникшей при этом ошибки.
+        self.assertEqual(cm.exception.message, "The length of the book author should be from 2 to 25 characters.")
+
+        # Попытка добавить книгу со слишком длинным автором.
+        with self.assertRaises(BookManagerError) as cm:
+            _ = book_manager.add_book("Толковый словарь", "абвгдуёжзиклмнопрстуфхцчшщ", 1982)
+        # Проверка текста возникшей при этом ошибки.
+        self.assertEqual(cm.exception.message, "The length of the book author should be from 2 to 25 characters.")
+
         # Попытка добавить книгу с годом выпуска больше текущего.
         with self.assertRaises(BookManagerError) as cm:
             _ = book_manager.add_book("Толковый словарь", "В.И. Даль", 2100)
@@ -55,6 +73,12 @@ class BookRepositoryTest(unittest.TestCase):
         # Попытка добавить книгу с текстом вместо года издания.
         with self.assertRaises(BookManagerError) as cm:
             _ = book_manager.add_book("Толковый словарь", "В.И. Даль", "aaaa")
+        # Проверка текста возникшей при этом ошибки.
+        self.assertEqual(cm.exception.message, "The year must be an integer.")
+
+        # Попытка добавить книгу с дробными значением года издания, но в текстовом виде.
+        with self.assertRaises(BookManagerError) as cm:
+            _ = book_manager.add_book("Толковый словарь", "В.И. Даль", "2001.3")
         # Проверка текста возникшей при этом ошибки.
         self.assertEqual(cm.exception.message, "The year must be an integer.")
 
@@ -159,6 +183,37 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(result, expected_result)
         self.assertEqual(books_num, 1)
 
+        # Поиск книг по году выпуска указанному в дробном виде.
+        books_num, result = book_manager.find_book(SearchCriteria.SEARCH_YEAR, 1980.9)
+        expected_result = "Book id 5, titled 'Звездные войны. Империя наносит ответный удар' of the author Дональд Ф. 1980 edition, status available"
+        self.assertEqual(result, expected_result)
+        self.assertEqual(books_num, 1)
+
+    def test_not_find_books(self):
+        """ Проверяет ненахождения книг """
+        # Создаётся пустое хранилище.
+        book_repository = BookRepository()
+        book_manager = BookManager(book_repository)
+
+        expected_result = "Nothing was found for your query"
+        # Проверяется, что в пустом хранилище ничего не находится.
+        books_num, result = book_manager.find_book(SearchCriteria.SEARCH_AUTHOR, 'Сергей Лукьяненко')
+        self.assertEqual(result, expected_result)
+        self.assertEqual(books_num, 0)
+
+        books_num, result = book_manager.find_book(SearchCriteria.SEARCH_TITLE, 'Звездные войны')
+        self.assertEqual(result, expected_result)
+        self.assertEqual(books_num, 0)
+
+        books_num, result = book_manager.find_book(SearchCriteria.SEARCH_YEAR, 1982)
+        self.assertEqual(result, expected_result)
+        self.assertEqual(books_num, 0)
+
+        # Далее создаётся заполненное книгами хранилище.
+        book_manager, book_repository = self._get_repository_filled_with_books()
+        # Проверка, что репозиторий заполнен книгами.
+        self.assertEqual(book_repository.number_of_books, len(self.books_data))
+
         # Проверяется, что несуществующие книги в репозитории не находится.
         expected_result = "Nothing was found for your query"
         books_num, result = book_manager.find_book(SearchCriteria.SEARCH_AUTHOR, "Джон Р. Р. Толкин")
@@ -170,6 +225,8 @@ class BookRepositoryTest(unittest.TestCase):
         books_num, result = book_manager.find_book(SearchCriteria.SEARCH_YEAR, 1955)
         self.assertEqual(result, expected_result)
         self.assertEqual(books_num, 0)
+
+
 
     def test_find_books_negative(self):
         """ Проверяет поиск книг негативный """
@@ -183,6 +240,11 @@ class BookRepositoryTest(unittest.TestCase):
         # Проверка исключения при неверно указанном годе при поиске по году выпуска книги.
         with self.assertRaises(BookManagerError) as cm:
             _, _ = book_manager.find_book(SearchCriteria.SEARCH_YEAR, "dddd")
+        self.assertEqual(cm.exception.message, "The year must be an integer.")
+
+        # Проверка исключения при попытке поиска книги по году выпуска указанному в виде дроби, то в текстовом виде.
+        with self.assertRaises(BookManagerError) as cm:
+            _, _ = book_manager.find_book(SearchCriteria.SEARCH_YEAR, "1703.1")
         self.assertEqual(cm.exception.message, "The year must be an integer.")
 
         # Проверка исключения при неверно указанном годе при поиске по году выпуска книги.
@@ -259,6 +321,7 @@ Book id 6, titled 'Звездные войны. Возвращение джед�
             _ = book_manager.changing_status_book(2, 3)
         self.assertEqual(cm.exception.message, "The status must be a logical value.")
 
+    # noinspection PyMethodMayBeStatic
     def _get_id_and_status_from_book_str(self, book_str):
         """
         Выделяет из строкового обозначения книги её идентификатор и статус

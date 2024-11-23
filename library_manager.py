@@ -84,7 +84,7 @@ class LibraryManager:
         match search_num:
             case SearchCriteria.SEARCH_TITLE:
                 clear_display()
-                search_str = input("Enter the title of the book: ").strip()
+                search_str = input("Enter the title or part of the title of the book: ").strip()
             case SearchCriteria.SEARCH_AUTHOR:
                 clear_display()
                 search_str = input("Enter the author of the book: ").strip()
