@@ -15,7 +15,7 @@ class InputException(SimpleLibraryException):
 
 
 class BookRepositoryError(SimpleLibraryException):
-    """ Класс ошибки репозитория книг """
+    """ Класс ошибки хранилища книг """
     pass
 
 class BookRepositoryExportException(SimpleLibraryException):

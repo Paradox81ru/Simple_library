@@ -55,9 +55,9 @@ class BookRepository(AbstractBookRepository):
 
     def add_book(self, book: Book) -> int:
         """
-        Добавляет книгу в репозиторий
+        Добавляет книгу в хранилище
         :param book: Добавляемая книга
-        :return: Идентификатор добавленной в репозиторий книги
+        :return: Идентификатор добавленной в хранилище книги
         """
         self._last_id += 1
         book.id = self._last_id
@@ -87,7 +87,7 @@ class BookRepository(AbstractBookRepository):
 
     def remove_book(self, _id: int) -> Book:
         """
-        Удаляет книгу из репозитория
+        Удаляет книгу из хранилища
         :param _id: Идентификатор удаляемой книги.
         :return: Удалённая книга.
         :raises BookRepositoryError: Удалить книги невозможно, так как хранилище пустое;

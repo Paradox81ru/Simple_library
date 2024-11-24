@@ -23,27 +23,27 @@ class BookRepositoryTest(unittest.TestCase):
         book_repository = BookRepository()
         book_manager = BookManager(book_repository)
 
-        # Репозиторий заполняется книгами.
+        # Хранилище заполняется книгами.
         for book_data in self.books_data:
             book_manager.add_book(*book_data)
         return book_manager, book_repository
 
     def test_add_book(self):
-        """ Проверяет добавление книг в репозиторий """
+        """ Проверяет добавление книг в хранилище """
         book_manager = BookManager(BookRepository())
 
-        # Добавляет книгу в репозиторий,
+        # Добавляет книгу в хранилище,
         _id = book_manager.add_book(*self.books_data[0])
         # и проверяет, что вернулся идентификатор добавленной книги.
         self.assertEqual(_id, 1)
 
-        # Добавляет ещё одну книгу в репозиторий,
+        # Добавляет ещё одну книгу в хранилище,
         _id = book_manager.add_book(*self.books_data[1])
         # и проверяет, что вернулся идентификатор новой добавленной книги.
         self.assertEqual(_id, 2)
 
     def test_add_book_negative(self):
-        """ Проверяет добавление книг в репозиторий негативный """
+        """ Проверяет добавление книг в хранилище негативный """
         book_manager = BookManager(BookRepository())
 
         # Попытка добавить книгу со слишком коротким заголовком.
@@ -83,11 +83,11 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(cm.exception.message, "The year must be an integer.")
 
     def test_remove_book(self):
-        """ Проверяет удаление книги из репозитория через менеджер книг """
+        """ Проверяет удаление книги из хранилища через менеджер книг """
         book_manager, book_repository = self._get_repository_filled_with_books()
 
         number_of_books = len(self.books_data)
-        # Проверка, что репозиторий заполнен книгами.
+        # Проверка, что хранилище заполнено книгами.
         self.assertEqual(book_repository.number_of_books, number_of_books)
 
         # Проверка, что книга с идентификатором 6 есть в хранилище.
@@ -121,21 +121,21 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(book_repository.number_of_books, 0)
 
     def test_remove_book_negative(self):
-        """ Проверяет удаление книг из репозитория через менеджер книг негативный"""
+        """ Проверяет удаление книг из хранилища через менеджер книг негативный"""
         # Создаётся пустое хранилище.
         book_repository = BookRepository()
         book_manager = BookManager(book_repository)
 
-        # Проверка ошибки, при попытке удалить книгу из пустого репозитория
+        # Проверка ошибки, при попытке удалить книгу из пустого хранилища.
         with self.assertRaises(BookManagerError) as cm:
             book_manager.remove_book(9)
         self.assertEqual(cm.exception.message, "It is impossible to delete books because the repository is empty.")
 
-        # Далее репозиторий заполняется книгами.
+        # Далее хранилище заполняется книгами.
         for book_data in self.books_data:
             book_manager.add_book(*book_data)
         number_of_books = len(self.books_data)
-        # Проверка, что репозиторий заполнен книгами.
+        # Проверка, что хранилище заполнено книгами.
         self.assertEqual(book_repository.number_of_books, number_of_books)
 
         # Попытка удалить книгу, идентификатора которого нет.
@@ -148,7 +148,7 @@ class BookRepositoryTest(unittest.TestCase):
         book_manager, book_repository = self._get_repository_filled_with_books()
 
         number_of_books = len(self.books_data)
-        # Проверка, что репозиторий заполнен книгами.
+        # Проверка, что хранилище заполнена книгами.
         self.assertEqual(book_repository.number_of_books, number_of_books)
 
         # Получение информации о книге по её идентификатору.
@@ -200,7 +200,7 @@ class BookRepositoryTest(unittest.TestCase):
         book_repository = BookRepository()
         book_manager = BookManager(book_repository)
 
-        # В пустом репозитории информация о книге по ID получена не будет, вернётся None.
+        # В пустом хранилище информация о книге по ID получена не будет, вернётся None.
         result = book_manager.get_book_info_by_id(1)
         self.assertIsNone(result)
 
@@ -220,14 +220,14 @@ class BookRepositoryTest(unittest.TestCase):
 
         # Далее создаётся заполненное книгами хранилище.
         book_manager, book_repository = self._get_repository_filled_with_books()
-        # Проверка, что репозиторий заполнен книгами.
+        # Проверка, что хранилище заполнено книгами.
         self.assertEqual(book_repository.number_of_books, len(self.books_data))
 
         # При попытке получить информацию по ID о несуществующую книге, вернётся None.
         result = book_manager.get_book_info_by_id(9)
         self.assertIsNone(result)
 
-        # Проверяется, что несуществующие книги в репозитории не находится.
+        # Проверяется, что несуществующие книги в хранилище не находятся.
         expected_result = "Nothing was found for your query"
         books_num, result = book_manager.find_book(SearchCriteria.SEARCH_AUTHOR, "Джон Р. Р. Толкин")
         self.assertEqual(result, expected_result)
@@ -281,8 +281,8 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(cm.exception.message, "The year cannot be longer than the current year.")
 
     def test_get_all_books(self):
-        """ Проверяет отображение всех книг из репозитория """
-        # Создаётся пустой репозиторий
+        """ Проверяет отображение всех книг из хранилища """
+        # Создаётся пустое хранилище
         book_repository = BookRepository()
         book_manager = BookManager(book_repository)
 

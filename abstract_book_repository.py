@@ -34,9 +34,9 @@ class AbstractBookRepository(ABC):
     @abstractmethod
     def add_book(self, book: Book) -> int:
         """
-        Добавляет книгу в репозиторий
+        Добавляет книгу в хранилище
         :param book: Добавляемая книга
-        :return: идентификатор добавленной в репозиторий книги
+        :return: идентификатор добавленной в хранилище книг книги
         """
         raise NotImplementedError()
 
@@ -56,7 +56,7 @@ class AbstractBookRepository(ABC):
     @abstractmethod
     def remove_book(self, _id: int) -> Book:
         """
-        Удаляет книгу из репозитория
+        Удаляет книгу из хранилища
         :param _id: Идентификатор удаляемой книги.
         :return: Удалённая книга.
         :raises BookRepositoryError: Удалить книги невозможно, так как хранилище пустое;
