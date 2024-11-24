@@ -32,7 +32,7 @@ class LibraryConsole:
         """ Отображает меню действий """
         print(f"{self.ADD_BOOK}. Adding a book.")
         print(f"{self.REMOVE_BOOK}. Deleting a book.")
-        print(f"{self.SEARCH_BOOK}. Book Search.")
+        print(f"{self.SEARCH_BOOK}. Book search.")
         print(f"{self.DISPLAY_ALL_BOOKS}. Displaying all books.")
         print(f"{self.CHANGE_BOOK_STATUS}. Changing the status of a book.")
         print(f"Press (q)uit to exit")
@@ -48,7 +48,7 @@ class LibraryConsole:
             clear_display()
             print(f"{self.library_tile}\n")
             self._show_menu()
-            action_num = input("Select a menu item: ").strip().lower()
+            action_num = input("Select a menu item: ").strip(' .').lower()
             if action_num in ('q', 'quit'):
                 quit_handler()
                 break
@@ -148,7 +148,7 @@ class LibraryConsole:
             case SearchCriteria.SEARCH_YEAR:
                 try:
                     clear_display()
-                    search_str = self._input_year()
+                    search_str = self._input_validation(self._input_year)
                 except InputStop:
                     return
         try:
