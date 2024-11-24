@@ -8,7 +8,7 @@ from exceptions import InputException, BookRepositoryError, BookManagerError, Va
 from helper import clear_display, print_awaiting_message
 from typing import final
 
-from validation import validation_id, validation_year
+from validation import validation_id, validation_year, validation_title, validation_author
 
 
 class LibraryConsole:
@@ -75,13 +75,16 @@ class LibraryConsole:
     def _add_book(self):
         """ Добавляет книгу в библиотеку """
         # Запрашивает данные для добавления книги.
-        clear_display()
-        title = input("Enter the title of the book: ").strip()
-        clear_display()
-        author = input("Enter the author of the book: ").strip()
-        clear_display()
         try:
-            year = self._input_year()
+            clear_display()
+            title = self._input_validation(self._input_title)
+            # title = self._input_title()
+            clear_display()
+            author = self._input_validation(self._input_author)
+            # author = self._input_author()
+            clear_display()
+            year = self._input_validation(self._input_year)
+            # year = self._input_year()
         except InputStop:
             return
 
@@ -96,7 +99,8 @@ class LibraryConsole:
         """ Удаляет книгу из библиотеки """
         clear_display()
         try:
-            _id = self._input_id(f"Enter the ID of the book you want to delete{self.PRESS_CANCEL}: ")
+            _id = self._input_validation(
+                self._input_id(f"Enter the ID of the book you want to delete{self.PRESS_CANCEL}: "))
         except InputStop:
             return
 
@@ -197,7 +201,8 @@ class LibraryConsole:
         """ Изменяет статус книги """
         clear_display()
         try:
-            _id = self._input_id(f"Enter the ID of the book whose status you want to change{self.PRESS_CANCEL}: ")
+            _id = self._input_validation(
+                self._input_id(f"Enter the ID of the book whose status you want to change{self.PRESS_CANCEL}: "))
             clear_display()
             input_status = self._input_status()
         except InputStop:
@@ -222,13 +227,71 @@ class LibraryConsole:
         :return: Введённый идентификатор.
         :raises InputStop: Отменить ввод.
         """
+        def wrap():
+            num = input(msg).strip().lower()
+            self._check_cancel_input(num)
+            return validation_id(num)
+        return wrap
+
+    # def _input_id(self, msg):
+    #     """
+    #     Запрос ввода идентификатора книги
+    #     :param msg: Сообщение при вводе идентификатора
+    #     :return: Введённый идентификатор.
+    #     :raises InputStop: Отменить ввод.
+    #     """
+    #     while True:
+    #         try:
+    #             num = input(msg).strip().lower()
+    #             self._check_cancel_input(num)
+    #             return validation_id(num)
+    #         except ValidationError as err:
+    #             clear_display()
+    #             print(f"Error: {err.message} {self.TRY_AGAIN}")
+
+    def _input_title(self):
+        """
+        Запрос ввода наименования книги
+        :return: Наименование книги.
+        :raises InputStop: Отменить ввод
+        """
+        title = input(f"Enter the title of the book{self.PRESS_CANCEL}: ").strip()
+        self._check_cancel_input(title)
+        return validation_title(title)
+
+    def _input_author(self):
+        """
+        Запрос ввода автора книги
+        :return: Автор книги.
+        :raises InputStop: Отменить ввод
+        """
+        author = input(f"Enter the author of the book:{self.PRESS_CANCEL}: ").strip()
+        self._check_cancel_input(author)
+        return validation_author(author)
+
+    def _input_year(self):
+        """
+        Запрос ввода года издания
+        :return: Год издания.
+        :raises InputStop: Отменить ввод
+        """
+        year = input(f"Enter the year of publication of the book{self.PRESS_CANCEL}: ").strip().lower()
+        self._check_cancel_input(year)
+        return validation_year(year)
+
+    def _input_validation(self, func: callable):
+        """
+        Запрос ввода корректных данных
+        :param func:
+        :return: Корректные запрашиваемые данные.
+        :raises InputStop: Отменить ввод
+        """
         while True:
             try:
-                num = input(msg).strip().lower()
-                self._check_cancel_input(num)
-                return validation_id(num)
+                return func()
             except ValidationError as err:
                 clear_display()
+                # Предупреждение о неверно введённых данных.
                 print(f"Error: {err.message} {self.TRY_AGAIN}")
 
     def _input_status(self):
@@ -245,21 +308,6 @@ class LibraryConsole:
             except InputException as err:
                 clear_display()
                 # Предупреждение о неверно введённом статусе книги.
-                print(f"{err.message} {self.TRY_AGAIN}")
-
-    def _input_year(self):
-        """
-        Запрос ввода года издания
-        :return: Год издания.
-        :raises InputStop: Отменить ввод
-        """
-        while True:
-            try:
-                year = input(f"Enter the year of publication of the book{self.PRESS_CANCEL}: ").strip().lower()
-                self._check_cancel_input(year)
-                return validation_year(year)
-            except ValidationError as err:
-                clear_display()
                 print(f"Error: {err.message} {self.TRY_AGAIN}")
 
     def _input_confirm(self, msg):
@@ -291,8 +339,7 @@ class LibraryConsole:
             return BookStatus.AVAILABLE
         elif status_str in ('g', 'given_out'):
             return BookStatus.GIVEN_OUT
-        raise InputException(f"Status '{status_str}' is invalid. "
-                             f"The status must be only a '(a)vailable' or '(g)iven_out'.")
+        raise InputException(f"The status must be only a '(a)vailable' or '(g)iven_out'.")
 
     # noinspection PyMethodMayBeStatic
     def _check_cancel_input(self, _input):

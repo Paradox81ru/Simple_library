@@ -33,5 +33,4 @@ class LibraryConsoleTest(unittest.TestCase):
             with self.subTest(str_status=status_str):
                 with self.assertRaises(InputException, msg=f"'{status_str}' is not raises exception") as cm:
                     self.library_manager._str_status_convert(status_str)
-                self.assertEqual(cm.exception.message, f"Status '{status_str}' is invalid. "
-                                                       f"The status must be only a '(a)vailable' or '(g)iven_out'.")
+                self.assertEqual(cm.exception.message, f"The status must be only a '(a)vailable' or '(g)iven_out'.")
