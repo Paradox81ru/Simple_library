@@ -176,8 +176,7 @@ class LibraryConsole:
             print(f"{SearchCriteria.SEARCH_YEAR}. Year.")
 
             search_num = input("Select a search num: ").strip().lower()
-            if search_num in ('c', 'cancel'):
-                raise InputStop()
+            self._check_cancel_input(search_num)
             if search_num == "":
                 continue
             # Если указан неверный пункт поиска, то заново запрашивается ввода пункта поиска.
@@ -226,8 +225,7 @@ class LibraryConsole:
         while True:
             try:
                 num = input(msg).strip().lower()
-                if num in ('c', 'cancel'):
-                    raise InputStop()
+                self._check_cancel_input(num)
                 return validation_id(num)
             except ValidationError as err:
                 clear_display()
@@ -242,8 +240,7 @@ class LibraryConsole:
         while True:
             try:
                 status_str = input(f"Enter status book (a)vailable or (g)iven_out{self.PRESS_CANCEL}: ").strip().lower()
-                if status_str in ('c', 'cancel'):
-                    raise InputStop()
+                self._check_cancel_input(status_str)
                 return self._str_status_convert(status_str)
             except InputException as err:
                 clear_display()
@@ -259,8 +256,7 @@ class LibraryConsole:
         while True:
             try:
                 year = input(f"Enter the year of publication of the book{self.PRESS_CANCEL}: ").strip().lower()
-                if year in ('c', 'cancel'):
-                    raise InputStop()
+                self._check_cancel_input(year)
                 return validation_year(year)
             except ValidationError as err:
                 clear_display()
@@ -277,9 +273,7 @@ class LibraryConsole:
             clear_display()
             print(msg)
             confirm = input(f"Select Yes/No{self.PRESS_CANCEL}: ").strip().lower()
-            if confirm in ('c', 'cancel'):
-                raise InputStop()
-
+            self._check_cancel_input(confirm)
             if confirm in ('y', 'yes', 'n', 'no'):
                 return confirm
             else:
@@ -300,6 +294,15 @@ class LibraryConsole:
         raise InputException(f"Status '{status_str}' is invalid. "
                              f"The status must be only a '(a)vailable' or '(g)iven_out'.")
 
+    # noinspection PyMethodMayBeStatic
+    def _check_cancel_input(self, _input):
+        """
+        Проверят введенное значение на отмену ввода
+        :param _input: значение ввода
+        :raises InputStop: исключение для прерывания ввода.
+        """
+        if _input in ('c', 'cancel'):
+            raise InputStop()
 
 class InputStop(Exception):
     """ Отмена ввода данных """

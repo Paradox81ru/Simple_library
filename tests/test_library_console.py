@@ -5,6 +5,7 @@ import unittest
 from app import SimpleLibrary
 from book_manager import BookManager
 from book_repository import BookRepository
+from enums import BookStatus
 from library_console import LibraryConsole, InputException
 
 
@@ -20,8 +21,8 @@ class LibraryConsoleTest(unittest.TestCase):
 
     def test_str_status_convert_positive(self):
         """ Проверяет конвертацию вводимого параметра статуса книги """
-        for status_str, result in (('a', True), ('available', True),
-                                   ('g', False), ('given_out', False)):
+        for status_str, result in (('a',  BookStatus.AVAILABLE), ('available', BookStatus.AVAILABLE),
+                                   ('g', BookStatus.GIVEN_OUT), ('given_out', BookStatus.GIVEN_OUT)):
             with self.subTest(status_str=status_str, result=result):
                 self.assertEqual(self.library_manager._str_status_convert(status_str), result,
                                  msg=f"'{status_str}' is not convert to {result}")
@@ -32,4 +33,5 @@ class LibraryConsoleTest(unittest.TestCase):
             with self.subTest(str_status=status_str):
                 with self.assertRaises(InputException, msg=f"'{status_str}' is not raises exception") as cm:
                     self.library_manager._str_status_convert(status_str)
-                self.assertEqual(cm.exception.message, f"Error: Status '{status_str}' is invalid")
+                self.assertEqual(cm.exception.message, f"Status '{status_str}' is invalid. "
+                                                       f"The status must be only a '(a)vailable' or '(g)iven_out'.")

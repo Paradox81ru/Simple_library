@@ -120,11 +120,11 @@ class BookRepository(AbstractBookRepository):
 
     def find_book_by_title(self, title: str) -> tuple[Book, ...]:
         """ Поиск книг по заголовку """
-        title = title.strip()
+        title = title.strip().lower()
         # При пустом запросе должен вернуться пустой кортеж
         if title == "":
             return ()
-        return tuple(filter(lambda b: title in b.title, self._books.values()))
+        return tuple(filter(lambda b: title in b.title.lower(), self._books.values()))
 
     def find_book_by_year(self, year: int) -> tuple[Book, ...]:
         """

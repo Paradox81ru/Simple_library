@@ -143,6 +143,10 @@ class BookRepositoryTest(unittest.TestCase):
                               "Звездные войны. Возвращение джедая")
         self.assertEqual(tuple(book.title for book in books), expected_book_list)
 
+        # Так же поиск по заголовку производиться без учёта регистра.
+        books = book_repository.find_book_by_title("ночной")
+        self.assertEqual(books[0].title, "Ночной дозор")
+
         # Поиск книг по году издания.
         books = book_repository.find_book_by_year(1982)
         # Проверка, что найдена одна книга.
