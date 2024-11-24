@@ -35,6 +35,8 @@ class BookRepository(AbstractBookRepository):
         Загружает книги из файла
         :param filename:
         :return: Количество загруженных книг
+        :raises BookRepositoryError:
+        :raises BookRepositoryExportException:
         """
         filename = Path(filename)
         if not filename.exists():
@@ -144,7 +146,11 @@ class BookRepository(AbstractBookRepository):
         return [copy(book.to_dict()) for book in self.all_books]
 
     def _export(self, obj_list):
-        """ Заполняет хранилище из списка простых объектов """
+        """
+        Заполняет хранилище из списка простых объектов
+        :param obj_list:
+        :raises BookRepositoryExportException: Ошибка при экспорте данных
+        """
         last_id = 0
         i = 1
         try:
@@ -171,7 +177,11 @@ class BookRepository(AbstractBookRepository):
         return json.dumps(self._import())
 
     def _from_json(self, _json: str):
-        """ Заполняет хранилище по json строке """
+        """
+        Заполняет хранилище по json строке
+        :param _json:
+        :raises BookRepositoryExportException: Ошибка при экспорте данных
+        """
         self._export(json.loads(_json))
 
     def _is_repository_empty(self, action: str):

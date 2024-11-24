@@ -2,6 +2,7 @@ from pathlib import Path
 
 from book_manager import BookManager
 from book_repository import BookRepository
+from exceptions import BookRepositoryError, BookRepositoryExportException
 from helper import clear_display, print_awaiting_message
 from library_console import LibraryConsole
 import sys
@@ -24,8 +25,12 @@ class SimpleLibrary:
         repository_file = Path(self.REPOSITORY_FILENAME)
         # Данные будут загружены, если файл для загрузки есть.
         if repository_file.exists():
-            load_num = self._book_manager.load_data(self.REPOSITORY_FILENAME)
-            print_awaiting_message(f'{load_num} books have been uploaded')
+            try:
+                load_num = self._book_manager.load_data(self.REPOSITORY_FILENAME)
+                print_awaiting_message(f'{load_num} books have been uploaded')
+            except (BookRepositoryError, BookRepositoryExportException) as err:
+                print("Books have not been uploaded.")
+                print_awaiting_message(err.message)
 
     def _save_data(self):
         """ Сохраняет данные из хранилища в файл """

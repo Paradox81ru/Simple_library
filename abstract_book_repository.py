@@ -28,6 +28,8 @@ class AbstractBookRepository(ABC):
         Загружает книги из файла
         :param filename:
         :return: Количество загруженных книг
+        :raises BookRepositoryError:
+        :raises BookRepositoryExportException:
         """
         raise NotImplementedError()
 

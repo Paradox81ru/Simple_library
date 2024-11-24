@@ -14,6 +14,8 @@ class BookManager:
         Загружает данные в хранилище
         :param filename: наименование файла для загрузки
         :return: Количество загруженных книг
+        :raises BookRepositoryError:
+        :raises BookRepositoryExportException:
         """
         return self._book_repository.load(filename)
 
