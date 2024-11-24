@@ -1,11 +1,10 @@
+import tempfile
 import unittest
-import json
 from pathlib import Path
 
 from book import Book, BookStatus
 from book_repository import BookRepository
 from exceptions import BookRepositoryError, BookRepositoryExportException
-import tempfile
 
 
 class BookRepositoryTest(unittest.TestCase):
@@ -285,7 +284,7 @@ class BookRepositoryTest(unittest.TestCase):
         # Возвращение статуса книги.
         changed_book = book_repository.changing_status_book(2, BookStatus.AVAILABLE)
         self.assertEqual(changed_book.status, BookStatus.AVAILABLE)
-        # и проверка, что статус книги вернулся к доступной..
+        # и проверка, что статус книги вернулся к доступной.
         find_book = book_repository.get_book_by_id(2)
         self.assertEqual(find_book.status, BookStatus.AVAILABLE)
 

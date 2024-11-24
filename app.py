@@ -5,7 +5,6 @@ from book_repository import BookRepository
 from exceptions import BookRepositoryError, BookRepositoryExportException
 from helper import clear_display, print_awaiting_message
 from library_console import LibraryConsole
-import sys
 
 
 class SimpleLibrary:
@@ -29,7 +28,7 @@ class SimpleLibrary:
                 load_num = self._book_manager.load_data(self.REPOSITORY_FILENAME)
                 print_awaiting_message(f'{load_num} books have been uploaded')
             except (BookRepositoryError, BookRepositoryExportException) as err:
-                print("Books have not been uploaded.")
+                print("Probably not all books have been downloaded..")
                 print_awaiting_message(err.message)
 
     def _save_data(self):

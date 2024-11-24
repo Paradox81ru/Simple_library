@@ -5,7 +5,7 @@ from book import BookStatus
 from book_manager import BookManager
 from book_repository import BookRepository
 from enums import SearchCriteria
-from exceptions import BookRepositoryError, BookManagerError
+from exceptions import BookManagerError
 
 
 class BookRepositoryTest(unittest.TestCase):

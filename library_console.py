@@ -1,13 +1,10 @@
-# from app import SimpleLibrary
-from datetime import datetime
+from typing import final
 
 from book import BookStatus
 from book_manager import BookManager
 from enums import SearchCriteria
-from exceptions import InputException, BookRepositoryError, BookManagerError, ValidationError
+from exceptions import InputException, BookManagerError, ValidationError
 from helper import clear_display, print_awaiting_message
-from typing import final
-
 from validation import validation_id, validation_year, validation_title, validation_author
 
 

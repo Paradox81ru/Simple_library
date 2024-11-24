@@ -1,7 +1,6 @@
 import unittest
 
 from book import Book, BookStatus
-from book_repository import BookRepository
 from exceptions import ValidationError
 
 
