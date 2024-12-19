@@ -4,47 +4,53 @@ from book import Book, BookStatus
 
 
 class AbstractBookRepository(ABC):
-    """ Абстрактный метод для хранилища книг """
+    """ Абстрактный метод для хранилища книг. """
 
     @property
     @abstractmethod
     def all_books(self) -> tuple[Book, ...]:
-        """ Возвращает всё книги из хранилища """
+        """ Возвращает всё книги из хранилища. """
         raise NotImplementedError()
 
     @abstractmethod
     def save(self, filename) -> int:
         """
-        Сохраняет книги в файл
+        Сохраняет книги в файл.
         :param filename:
-        :return: Количество сохранённых книг
+        :return: Количество сохранённых книг.
         """
         raise NotImplementedError()
 
     @abstractmethod
     def load(self, filename) -> int:
         """
-        Загружает книги из файла
+        Загружает книги из файла.
         :param filename:
-        :return: Количество загруженных книг
+        :return: Количество загруженных книг.
         :raises BookRepositoryError:
         :raises BookRepositoryExportException:
         """
         raise NotImplementedError()
 
     @abstractmethod
+    @property
+    def number_of_books(self) -> int:
+        """ Количество книг в хранилище. """
+        raise NotImplementedError()
+
+    @abstractmethod
     def add_book(self, book: Book) -> int:
         """
-        Добавляет книгу в хранилище
-        :param book: Добавляемая книга
-        :return: идентификатор добавленной в хранилище книг книги
+        Добавляет книгу в хранилище.
+        :param book: Добавляемая книга.
+        :return: Идентификатор добавленной в хранилище книг книги.
         """
         raise NotImplementedError()
 
     @abstractmethod
     def changing_status_book(self, _id: int, status: BookStatus) -> Book:
         """
-        Изменяет статус книги
+        Изменяет статус книги.
         :param _id: Идентификатор книги, статус которой надо изменить.
         :param status: Новый статус книги.
         :return: Книга с изменённым статусом.
@@ -57,7 +63,7 @@ class AbstractBookRepository(ABC):
     @abstractmethod
     def remove_book(self, _id: int) -> Book:
         """
-        Удаляет книгу из хранилища
+        Удаляет книгу из хранилища.
         :param _id: Идентификатор удаляемой книги.
         :return: Удалённая книга.
         :raises BookRepositoryError: Удалить книги невозможно, так как хранилище пустое;
@@ -69,28 +75,28 @@ class AbstractBookRepository(ABC):
     def get_book_by_id(self, _id: int) -> Book | None:
         """
         Получение книги по её идентификатору
-        :param _id: Идентификатор книги, которую требуется вернуть
+        :param _id: Идентификатор книги, которую требуется вернуть.
         :return: Найденная по указанному идентификатору книга или None, если книги с таим идентификатором нет.
-        :raises BookRepositoryError: Ошибка проверки корректности идентификатора
+        :raises BookRepositoryError: Ошибка проверки корректности идентификатора.
         """
         raise NotImplementedError()
 
     @abstractmethod
     def find_book_by_author(self, author: str) -> tuple[Book]:
-        """ Поиск книг по автору """
+        """ Поиск книг по автору. """
         raise NotImplementedError()
 
     @abstractmethod
     def find_book_by_title(self, title: str) -> tuple[Book]:
-        """ Поиск книг по заголовку """
+        """ Поиск книг по заголовку. """
         raise NotImplementedError()
 
     @abstractmethod
     def find_book_by_year(self, year: int) -> tuple[Book]:
         """
-        Поиск книг по году издания
+        Поиск книг по году издания.
         :param year:
         :return:
-        :raises BookRepositoryError: Ошибка при указании года выпуска книги
+        :raises BookRepositoryError: Ошибка при указании года выпуска книги.
         """
         raise NotImplementedError()

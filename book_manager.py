@@ -5,15 +5,15 @@ from exceptions import BookManagerError, BookRepositoryError, ValidationError
 
 
 class BookManager:
-    """ Класс управление хранилищем книг """
+    """ Класс управление хранилищем книг. """
     def __init__(self, book_repository: AbstractBookRepository):
         self._book_repository = book_repository
 
     def load_data(self, filename):
         """
-        Загружает данные в хранилище
-        :param filename: наименование файла для загрузки
-        :return: Количество загруженных книг
+        Загружает данные в хранилище.
+        :param filename: Наименование файла для загрузки.
+        :return: Количество загруженных книг.
         :raises BookRepositoryError:
         :raises BookRepositoryExportException:
         """
@@ -24,18 +24,18 @@ class BookManager:
         Сохраняет данные из хранилища в файл.
         Файл создаётся, только если хранилище не пустое.
         :param filename: Наименование файла для сохранения.
-        :return: Количество сохранённых книг
+        :return: Количество сохранённых книг.
         """
         return self._book_repository.save(filename)
 
     def add_book(self, title: str, author: str, year: int) -> int:
         """
-        Добавляет книгу в библиотеку
-        :param title: название книги
-        :param author: автор
-        :param year: год издания
-        :return: идентификатор добавленной книги
-        :raises BookManagerError: Неправильно указан год издания книги
+        Добавляет книгу в библиотеку.
+        :param title: Название книги.
+        :param author: Автор.
+        :param year: Год издания.
+        :return: Идентификатор добавленной книги.
+        :raises BookManagerError: Неправильно указан год издания книги.
         """
         try:
             new_book = Book(title, author, year)
@@ -46,7 +46,7 @@ class BookManager:
 
     def remove_book(self, _id: int) -> int:
         """
-        Удаляет книгу из хранилища
+        Удаляет книгу из хранилища.
         :param _id: Идентификатор удаляемой книги.
         :return: Идентификатор удалённой книги.
         :raises BookManagerError: Удалить книги невозможно, так как хранилище пусто;
@@ -60,8 +60,8 @@ class BookManager:
     def get_book_info_by_id(self, _id) -> str | None:
         """
         Возвращает информацию о книге по её идентификатору, или None, если книга не найдена.
-        :param _id:
-        :return:
+        :param _id: Уникальный идентификатор книги.
+        :return: Информация о книге, или None.
         :raises BookManagerError: Удалить книги невозможно, так как хранилище пусто;
                                      Книга с указанным идентификатором отсутствует.
         """
@@ -76,12 +76,12 @@ class BookManager:
 
     def find_book(self, search_criteria: SearchCriteria, search_val: str | int) -> tuple[int, str]:
         """
-        Поиск книги
-        :param search_criteria: Критерий поиска
-        :param search_val: значение поиска
-        :return: Кортеж в формате (Кол-во найденных книг, Строковый список найденных книг)
+        Поиск книги.
+        :param search_criteria: Критерий поиска.
+        :param search_val: Значение поиска.
+        :return: Кортеж в формате (Кол-во найденных книг, Строковый список найденных книг).
         :raises BookManagerError: Ошибка при указании года выпуска книги;
-                                     Указан неверный критерий поиска
+                                     Указан неверный критерий поиска.
         """
         match search_criteria:
             case SearchCriteria.SEARCH_TITLE:
@@ -101,8 +101,8 @@ class BookManager:
 
     def get_all_books(self) -> tuple[int, str]:
         """
-        Возвращает общее кол-во книг и список всех книг из хранилища
-        :return: Кортеж в формате (Общее кол-во книг, строковый список всех книг)
+        Возвращает общее кол-во книг и список всех книг из хранилища.
+        :return: Кортеж в формате (Общее кол-во книг, строковый список всех книг).
         """
         books = self._book_repository.all_books
         count_books = len(books)

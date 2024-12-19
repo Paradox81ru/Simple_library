@@ -7,7 +7,7 @@ from exceptions import ValidationError
 class BookTest(unittest.TestCase):
     """ Тестирование книги """
     def test_book_create_and_stringing(self):
-        """ Тестирует создание книги и её строковое отображение """
+        """ Тестирует создание книги и её строковое отображение. """
         # Новая книга
         book = Book("Толковый словарь", "В.И. Даль", 1982)
         self.assertEqual(str(book), f"Book titled 'Толковый словарь' of the author В.И. Даль 1982 edition, "
@@ -24,7 +24,7 @@ class BookTest(unittest.TestCase):
                                     f"В.И. Даль 1982 edition, status available")
 
     def test_edit_book(self):
-        """ Тестирует изменение книги позитивный """
+        """ Тестирует изменение книги позитивный. """
         title = "Толковый словарь"
         author = "В.И. Даль"
         year = 1982
@@ -92,7 +92,7 @@ class BookTest(unittest.TestCase):
         self.assertEqual(book.status.to_str(), 'given out')
 
     def test_edit_book_negative(self):
-        """ Тестирует изменение книги негативный тест """
+        """ Тестирует изменение книги негативный тест. """
         # Попытка создание книги со слишком коротким заголовком.
         with self.assertRaises(ValidationError) as cm:
             _ = Book("То", "В.И. Даль", 1988)

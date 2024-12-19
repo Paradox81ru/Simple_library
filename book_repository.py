@@ -10,7 +10,7 @@ from validation import validation_year, validation_id
 
 
 class BookRepository(AbstractBookRepository):
-    """ Хранилище книг """
+    """ Хранилище книг. """
     def __init__(self):
         self._last_id = 0
         self._books: dict[id, Book] = {}
@@ -20,7 +20,7 @@ class BookRepository(AbstractBookRepository):
         Сохраняет книги в файл.
         Файл создаётся, только если хранилище не пустое.
         :param filename:
-        :return: Количество сохранённых книг
+        :return: Количество сохранённых книг.
         """
         # Сохранять книги надо только, если хранилище не пустое.
         if self.number_of_books == 0:
@@ -32,9 +32,9 @@ class BookRepository(AbstractBookRepository):
 
     def load(self, filename) -> int:
         """
-        Загружает книги из файла
+        Загружает книги из файла.
         :param filename:
-        :return: Количество загруженных книг
+        :return: Количество загруженных книг.
         :raises BookRepositoryError:
         :raises BookRepositoryExportException:
         """
@@ -47,19 +47,19 @@ class BookRepository(AbstractBookRepository):
 
     @property
     def number_of_books(self) -> int:
-        """ Количество книг в хранилище """
+        """ Количество книг в хранилище. """
         return len(self._books)
 
     @property
     def all_books(self) -> tuple[Book, ...]:
-        """ Возвращает всё книги из хранилища """
+        """ Возвращает всё книги из хранилища. """
         return tuple(self._books.values())
 
     def add_book(self, book: Book) -> int:
         """
-        Добавляет книгу в хранилище
-        :param book: Добавляемая книга
-        :return: Идентификатор добавленной в хранилище книги
+        Добавляет книгу в хранилище.
+        :param book: Добавляемая книга.
+        :return: Идентификатор добавленной в хранилище книги.
         """
         self._last_id += 1
         book.id = self._last_id
@@ -69,7 +69,7 @@ class BookRepository(AbstractBookRepository):
 
     def changing_status_book(self, _id: int, status: BookStatus) -> Book:
         """
-        Изменяет статус книги
+        Изменяет статус книги.
         :param _id: Идентификатор книги, статус которой надо изменить.
         :param status: Новый статус книги.
         :return: Книга с изменённым статусом.
@@ -89,7 +89,7 @@ class BookRepository(AbstractBookRepository):
 
     def remove_book(self, _id: int) -> Book:
         """
-        Удаляет книгу из хранилища
+        Удаляет книгу из хранилища.
         :param _id: Идентификатор удаляемой книги.
         :return: Удалённая книга.
         :raises BookRepositoryError: Удалить книги невозможно, так как хранилище пустое;
@@ -103,10 +103,10 @@ class BookRepository(AbstractBookRepository):
 
     def get_book_by_id(self, _id: int) -> Book | None:
         """
-        Получение книги по её идентификатору
-        :param _id: Идентификатор книги, которую требуется вернуть
+        Получение книги по её идентификатору.
+        :param _id: Идентификатор книги, которую требуется вернуть.
         :return: Найденная по указанному идентификатору книга или None, если книги с таим идентификатором нет.
-        :raises BookRepositoryError: Ошибка проверки корректности идентификатора
+        :raises BookRepositoryError: Ошибка проверки корректности идентификатора.
         """
         try:
             return self._books[validation_id(_id)]
@@ -116,12 +116,12 @@ class BookRepository(AbstractBookRepository):
             return None
 
     def find_book_by_author(self, author: str) -> tuple[Book, ...]:
-        """ Поиск книг по автору """
+        """ Поиск книг по автору. """
         author = author.strip()
         return tuple(filter(lambda b: b.author == author, self._books.values()))
 
     def find_book_by_title(self, title: str) -> tuple[Book, ...]:
-        """ Поиск книг по заголовку """
+        """ Поиск книг по заголовку. """
         title = title.strip().lower()
         # При пустом запросе должен вернуться пустой кортеж
         if title == "":
@@ -130,10 +130,10 @@ class BookRepository(AbstractBookRepository):
 
     def find_book_by_year(self, year: int) -> tuple[Book, ...]:
         """
-        Поиск книг по году издания
+        Поиск книг по году издания.
         :param year:
         :return:
-        :raises BookRepositoryError: Ошибка при указании года выпуска книги
+        :raises BookRepositoryError: Ошибка при указании года выпуска книги.
         """
         try:
             year = validation_year(year)
@@ -142,14 +142,14 @@ class BookRepository(AbstractBookRepository):
         return tuple(filter(lambda b: b.year == year, self._books.values()))
 
     def _import(self) -> list[dict[str: Any]]:
-        """ Преобразует список всех книг в список простых объект """
+        """ Преобразует список всех книг в список простых объект. """
         return [copy(book.to_dict()) for book in self.all_books]
 
     def _export(self, obj_list):
         """
-        Заполняет хранилище из списка простых объектов
+        Заполняет хранилище из списка простых объектов.
         :param obj_list:
-        :raises BookRepositoryExportException: Ошибка при экспорте данных
+        :raises BookRepositoryExportException: Ошибка при экспорте данных.
         """
         last_id = 0
         i = 1
@@ -171,23 +171,22 @@ class BookRepository(AbstractBookRepository):
             raise BookRepositoryExportException(f"Error when exporting books number {i}. The {err.args[0][1:]} data is missing")
         self._last_id = last_id
 
-
     def _to_json(self) -> str:
-        """ Преобразует список всех книг в json строку """
+        """ Преобразует список всех книг в json строку. """
         return json.dumps(self._import())
 
     def _from_json(self, _json: str):
         """
-        Заполняет хранилище по json строке
+        Заполняет хранилище по json строке.
         :param _json:
-        :raises BookRepositoryExportException: Ошибка при экспорте данных
+        :raises BookRepositoryExportException: Ошибка при экспорте данных.
         """
         self._export(json.loads(_json))
 
     def _is_repository_empty(self, action: str):
         """
         Проверка на пустое хранилище.
-        :raises BookRepositoryError: Удалить книги невозможно, так как хранилище пустое
+        :raises BookRepositoryError: Удалить книги невозможно, так как хранилище пустое.
         """
         if self.number_of_books == 0:
             raise BookRepositoryError(f"It is impossible to {action} books because the repository is empty.")

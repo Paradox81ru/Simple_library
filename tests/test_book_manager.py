@@ -19,7 +19,7 @@ class BookRepositoryTest(unittest.TestCase):
                            ("Звездные войны. Возвращение джедая", "Джеймс Кан", 1983))
 
     def _get_repository_filled_with_books(self) -> tuple[BookManager, BookRepository]:
-        """ Возвращает заполненное книгами хранилище и его менеджер книг """
+        """ Возвращает заполненное книгами хранилище и его менеджер книг. """
         book_repository = BookRepository()
         book_manager = BookManager(book_repository)
 
@@ -29,7 +29,7 @@ class BookRepositoryTest(unittest.TestCase):
         return book_manager, book_repository
 
     def test_add_book(self):
-        """ Проверяет добавление книг в хранилище """
+        """ Проверяет добавление книг в хранилище. """
         book_manager = BookManager(BookRepository())
 
         # Добавляет книгу в хранилище,
@@ -43,7 +43,7 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(_id, 2)
 
     def test_add_book_negative(self):
-        """ Проверяет добавление книг в хранилище негативный """
+        """ Проверяет добавление книг в хранилище негативный. """
         book_manager = BookManager(BookRepository())
 
         # Попытка добавить книгу со слишком коротким заголовком.
@@ -83,7 +83,7 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(cm.exception.message, "The year must be an integer.")
 
     def test_remove_book(self):
-        """ Проверяет удаление книги из хранилища через менеджер книг """
+        """ Проверяет удаление книги из хранилища через менеджер книг. """
         book_manager, book_repository = self._get_repository_filled_with_books()
 
         number_of_books = len(self.books_data)
@@ -121,7 +121,7 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(book_repository.number_of_books, 0)
 
     def test_remove_book_negative(self):
-        """ Проверяет удаление книг из хранилища через менеджер книг негативный"""
+        """ Проверяет удаление книг из хранилища через менеджер книг негативный. """
         # Создаётся пустое хранилище.
         book_repository = BookRepository()
         book_manager = BookManager(book_repository)
@@ -144,7 +144,7 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(cm.exception.message, f"The book with the ID 10 is missing.")
 
     def test_find_books(self):
-        """ Проверяет поиск книг """
+        """ Проверяет поиск книг. """
         book_manager, book_repository = self._get_repository_filled_with_books()
 
         number_of_books = len(self.books_data)
@@ -195,7 +195,7 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(books_num, 1)
 
     def test_not_find_books(self):
-        """ Проверяет ненахождения книг """
+        """ Проверяет ненахождения книг. """
         # Создаётся пустое хранилище.
         book_repository = BookRepository()
         book_manager = BookManager(book_repository)
@@ -240,9 +240,8 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(books_num, 0)
 
 
-
     def test_find_books_negative(self):
-        """ Проверяет поиск книг негативный """
+        """ Проверяет поиск книг негативный. """
         book_manager, _ = self._get_repository_filled_with_books()
 
         # Проверяет исключение при попытке получить информацию о книге по-нулевому ID.
@@ -281,7 +280,7 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(cm.exception.message, "The year cannot be longer than the current year.")
 
     def test_get_all_books(self):
-        """ Проверяет отображение всех книг из хранилища """
+        """ Проверяет отображение всех книг из хранилища. """
         # Создаётся пустое хранилище
         book_repository = BookRepository()
         book_manager = BookManager(book_repository)
@@ -307,7 +306,7 @@ Book id 6, titled 'Звездные войны. Возвращение джед�
         self.assertEqual(books_num, 6)
 
     def test_changing_book_status(self):
-        """ Проверяет изменение статуса книги """
+        """ Проверяет изменение статуса книги. """
         book_manager, _ = self._get_repository_filled_with_books()
         # Ищется книга по году 2000, для удобства такая в хранилище сейчас одна.
         books_str = book_manager.find_book(SearchCriteria.SEARCH_YEAR, 2000)
@@ -326,7 +325,7 @@ Book id 6, titled 'Звездные войны. Возвращение джед�
         self.assertEqual(status, 'given out')
 
     def test_changing_book_status_negative(self):
-        """ Проверяет изменение статуса книги """
+        """ Проверяет изменение статуса книги. """
         # Создаётся пустое хранилище.
         book_repository = BookRepository()
         book_manager = BookManager(book_repository)
@@ -352,9 +351,9 @@ Book id 6, titled 'Звездные войны. Возвращение джед�
     # noinspection PyMethodMayBeStatic
     def _get_id_and_status_from_book_str(self, book_str):
         """
-        Выделяет из строкового обозначения книги её идентификатор и статус
+        Выделяет из строкового обозначения книги её идентификатор и статус.
         :param book_str:
-        :return: Кортеж в формате (Идентификатор, статус)
+        :return: Кортеж в формате (Идентификатор, статус).
         """
         pattern = r".*id\s(\d+).*status\s([\w\s]+)"
         match = re.findall(pattern, book_str)

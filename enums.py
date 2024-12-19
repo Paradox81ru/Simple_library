@@ -2,7 +2,7 @@ from enum import StrEnum, Enum
 
 
 class SearchCriteria(StrEnum):
-    """ Перечисление критериев поиска """
+    """ Перечисление критериев поиска. """
     SEARCH_TITLE = '1'
     SEARCH_AUTHOR = '2'
     SEARCH_YEAR = '3'
@@ -10,10 +10,10 @@ class SearchCriteria(StrEnum):
     @classmethod
     def get_criteria(cls, val: str):
         """
-        Получение нужного значения из перечислений критериев поиска
-        :param val: Значение критерия
+        Получение нужного значения из перечислений критериев поиска.
+        :param val: Значение критерия.
         :return: Критерий поиска.
-        :raises ValueError: Неверное значение критерия поиска
+        :raises ValueError: Неверное значение критерия поиска.
         """
         match val:
             case cls.SEARCH_TITLE:
@@ -25,8 +25,9 @@ class SearchCriteria(StrEnum):
             case _:
                 raise ValueError("Invalid value of the search criteria")
 
+
 class BookStatus(Enum):
-    """ Статус книги в библиотеке """
+    """ Статус книги в библиотеке. """
     AVAILABLE = True
     GIVEN_OUT = False
 
@@ -35,5 +36,5 @@ class BookStatus(Enum):
 
     @classmethod
     def get_status(cls, status: bool):
-        """ Возвращает статус по логическому значению """
+        """ Возвращает статус по логическому значению. """
         return cls.AVAILABLE if status else cls.GIVEN_OUT

@@ -32,14 +32,14 @@ class SimpleLibrary:
                 print_awaiting_message(err.message)
 
     def _save_data(self):
-        """ Сохраняет данные из хранилища в файл """
+        """ Сохраняет данные из хранилища в файл. """
         save_num = self._book_manager.save_data(self.REPOSITORY_FILENAME)
         if save_num > 0:
             # Показывать сообщение, только если были данные для сохранения.
             print(f"{save_num} books have been saved")
 
     def _quit_handler(self):
-        """ Обработка выхода из приложения """
+        """ Обработка выхода из приложения. """
         clear_display()
         self._save_data()
         input("Thank you for using our library. Good luck.")

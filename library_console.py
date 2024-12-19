@@ -9,7 +9,7 @@ from validation import validation_id, validation_year, validation_title, validat
 
 
 class LibraryConsole:
-    """ Класс управления библиотекой """
+    """ Класс управления библиотекой. """
     PRESS_CANCEL = ", or press '(c)cancel' to cancel input"
     TRY_AGAIN: final = f"Try again."
 
@@ -26,7 +26,7 @@ class LibraryConsole:
         self._book_manager = book_manager
 
     def _show_menu(self):
-        """ Отображает меню действий """
+        """ Отображает меню действий. """
         print(f"{self.ADD_BOOK}. Adding a book.")
         print(f"{self.REMOVE_BOOK}. Deleting a book.")
         print(f"{self.SEARCH_BOOK}. Book search.")
@@ -37,8 +37,8 @@ class LibraryConsole:
 
     def start_console(self, quit_handler: callable):
         """
-        Запуск консоли
-        :param quit_handler: Обработчик выхода из библиотеки
+        Запуск консоли.
+        :param quit_handler: Обработчик выхода из библиотеки.
         """
         # Запрос выбора действия, пока не будет произведён выход из приложения.
         while True:
@@ -52,7 +52,7 @@ class LibraryConsole:
             self._actions_handle(action_num)
 
     def _actions_handle(self, action_num: str):
-        """ Обрабатывает выбранное действие """
+        """ Обрабатывает выбранное действие. """
         match action_num.strip():
             case '':
                 return
@@ -70,7 +70,7 @@ class LibraryConsole:
                 self._invalid_menu()
 
     def _add_book(self):
-        """ Добавляет книгу в библиотеку """
+        """ Добавляет книгу в библиотеку. """
         # Запрашивает данные для добавления книги.
         try:
             clear_display()
@@ -93,7 +93,7 @@ class LibraryConsole:
             print_awaiting_message(err.message)
 
     def _remove_book(self):
-        """ Удаляет книгу из библиотеки """
+        """ Удаляет книгу из библиотеки. """
         clear_display()
         try:
             _id = self._input_validation(
@@ -127,7 +127,7 @@ class LibraryConsole:
             print_awaiting_message(err.message)
 
     def _search_book(self):
-        """ Поиск книги """
+        """ Поиск книги. """
         try:
             search_num = self._select_search_criterion()
         except InputStop:
@@ -164,7 +164,7 @@ class LibraryConsole:
 
     def _select_search_criterion(self) -> str:
         """
-        Выбор критерия поиска
+        Выбор критерия поиска.
         :return: Пункт выбранного критерия поиска.
         :raises InputStop: Отменить ввод.
         """
@@ -195,7 +195,7 @@ class LibraryConsole:
         print_awaiting_message(all_books)
 
     def _changed_book_status(self):
-        """ Изменяет статус книги """
+        """ Изменяет статус книги. """
         clear_display()
         try:
             _id = self._input_validation(
@@ -213,14 +213,14 @@ class LibraryConsole:
 
     # noinspection PyMethodMayBeStatic
     def _invalid_menu(self):
-        """ Сообщение при неверно выбранном меню """
+        """ Сообщение при неверно выбранном меню. """
         clear_display()
         print_awaiting_message("There is no such menu")
 
     def _input_id(self, msg):
         """
-        Запрос ввода идентификатора книги
-        :param msg: Сообщение при вводе идентификатора
+        Запрос ввода идентификатора книги.
+        :param msg: Сообщение при вводе идентификатора.
         :return: Введённый идентификатор.
         :raises InputStop: Отменить ввод.
         """
@@ -248,9 +248,9 @@ class LibraryConsole:
 
     def _input_title(self):
         """
-        Запрос ввода наименования книги
+        Запрос ввода наименования книги.
         :return: Наименование книги.
-        :raises InputStop: Отменить ввод
+        :raises InputStop: Отменить ввод.
         """
         title = input(f"Enter the title of the book{self.PRESS_CANCEL}: ").strip()
         self._check_cancel_input(title)
@@ -258,9 +258,9 @@ class LibraryConsole:
 
     def _input_author(self):
         """
-        Запрос ввода автора книги
+        Запрос ввода автора книги.
         :return: Автор книги.
-        :raises InputStop: Отменить ввод
+        :raises InputStop: Отменить ввод.
         """
         author = input(f"Enter the author of the book:{self.PRESS_CANCEL}: ").strip()
         self._check_cancel_input(author)
@@ -268,9 +268,9 @@ class LibraryConsole:
 
     def _input_year(self):
         """
-        Запрос ввода года издания
+        Запрос ввода года издания.
         :return: Год издания.
-        :raises InputStop: Отменить ввод
+        :raises InputStop: Отменить ввод.
         """
         year = input(f"Enter the year of publication of the book{self.PRESS_CANCEL}: ").strip().lower()
         self._check_cancel_input(year)
@@ -278,10 +278,10 @@ class LibraryConsole:
 
     def _input_validation(self, func: callable):
         """
-        Запрос ввода корректных данных
+        Запрос ввода корректных данных.
         :param func:
         :return: Корректные запрашиваемые данные.
-        :raises InputStop: Отменить ввод
+        :raises InputStop: Отменить ввод.
         """
         while True:
             try:
@@ -293,9 +293,9 @@ class LibraryConsole:
 
     def _input_status(self):
         """
-        Запрос ввода статуса
+        Запрос ввода статуса.
         :return: Статус.
-        :raises InputStop: Отменить ввод
+        :raises InputStop: Отменить ввод.
         """
         while True:
             try:
@@ -309,10 +309,10 @@ class LibraryConsole:
 
     def _input_confirm(self, msg):
         """
-        Запрос подтверждения Да или Нет
-        :param msg: Сообщение при подтверждении
+        Запрос подтверждения Да или Нет.
+        :param msg: Сообщение при подтверждении.
         :return: Подтверждение.
-        :raises InputStop: Отменить ввод
+        :raises InputStop: Отменить ввод.
         """
         while True:
             clear_display()
@@ -341,13 +341,14 @@ class LibraryConsole:
     # noinspection PyMethodMayBeStatic
     def _check_cancel_input(self, _input):
         """
-        Проверят введенное значение на отмену ввода
-        :param _input: значение ввода
-        :raises InputStop: исключение для прерывания ввода.
+        Проверят введенное значение на отмену ввода.
+        :param _input: Значение ввода.
+        :raises InputStop: Исключение для прерывания ввода..
         """
         if _input in ('c', 'cancel'):
             raise InputStop()
 
+
 class InputStop(Exception):
-    """ Отмена ввода данных """
+    """ Отмена ввода данных. """
     pass

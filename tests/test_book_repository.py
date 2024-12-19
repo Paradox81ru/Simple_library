@@ -8,7 +8,7 @@ from exceptions import BookRepositoryError, BookRepositoryExportException
 
 
 class BookRepositoryTest(unittest.TestCase):
-    """ Тестирование хранилища книг """
+    """ Тестирование хранилища книг. """
 
     def setUp(self):
         self.books = (Book("Толковый словарь", "В.И. Даль", 1982),
@@ -27,7 +27,7 @@ class BookRepositoryTest(unittest.TestCase):
         return book_repository
 
     def test_add_book(self):
-        """ Проверяет добавление книг в хранилище """
+        """ Проверяет добавление книг в хранилище. """
         book_repository = BookRepository()
         self.assertEqual(book_repository.number_of_books, 0)
         book_1 = self.books[0]
@@ -52,7 +52,7 @@ class BookRepositoryTest(unittest.TestCase):
                 self.assertEqual(book_repository.number_of_books, i)
 
     def test_remove_book(self):
-        """ Проверяет удаление книг из хранилища """
+        """ Проверяет удаление книг из хранилища. """
         book_repository = self._get_repository_filled_with_books()
         number_of_books = len(self.books)
         # Проверка, что хранилище заполнено книгами.
@@ -89,7 +89,7 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(book_repository.number_of_books, 0)
 
     def test_remove_book_negative(self):
-        """ Проверяет удаление книг из хранилища негативный"""
+        """ Проверяет удаление книг из хранилища негативный. """
         # Создаётся пустое хранилище.
         book_repository = BookRepository()
         # Проверка ошибки, при попытке удалить книгу из пустого хранилища.
@@ -110,7 +110,7 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(cm.exception.message, f"The book with the ID 10 is missing.")
 
     def test_find_books(self):
-        """ Проверяет поиск книг """
+        """ Проверяет поиск книг. """
         book_repository = self._get_repository_filled_with_books()
         number_of_books = len(self.books)
         # Проверка, что хранилище заполнено книгами
@@ -165,7 +165,7 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual("Звездные войны. Империя наносит ответный удар", books[0].title)
 
     def test_not_find_books(self):
-        """ Проверяет ненахождения книг """
+        """ Проверяет ненахождения книг. """
         book_repository = BookRepository()
 
         # Проверка, что хранилище пустое.
@@ -215,7 +215,7 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(books, ())
 
     def test_find_books_negative(self):
-        """ Проверяет поиск книг негативный """
+        """ Проверяет поиск книг негативный. """
         book_repository = BookRepository()
 
         # Проверяет исключение при попытке получить книгу по-нулевому ID.
@@ -249,7 +249,7 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(cm.exception.message, "The year cannot be longer than the current year.")
 
     def test_get_all_books(self):
-        """ Проверяет возвращение всех книг из хранилища """
+        """ Проверяет возвращение всех книг из хранилища. """
         book_repository = self._get_repository_filled_with_books()
         number_of_books = len(self.books)
         # Проверка, что хранилище заполнено книгами
@@ -289,7 +289,7 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(find_book.status, BookStatus.AVAILABLE)
 
     def test_changing_book_status_negative(self):
-        """ Проверяет изменение статуса книги негативный """
+        """ Проверяет изменение статуса книги негативный. """
         book_repository = BookRepository()
         # Проверка исключения при попытке изменить статус в пустом хранилище
         with self.assertRaises(BookRepositoryError) as cm:
@@ -310,7 +310,7 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(cm.exception.message, "The status must be a logical value.")
 
     def test_import_and_export_repository(self):
-        """ Проверяет импорт и экспорт данных хранилища """
+        """ Проверяет импорт и экспорт данных хранилища. """
         book_repository = self._get_repository_filled_with_books()
 
         # Все книги в список простых объектов.
@@ -332,7 +332,7 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(book_repository_2.number_of_books, 6)
 
     def test_export_repository_negative(self):
-        """ Проверяет экспорт данных хранилища негативный """
+        """ Проверяет экспорт данных хранилища негативный. """
         book_repository = self._get_repository_filled_with_books()
 
         # Импорт всех книг в список простых объектов.
@@ -375,7 +375,6 @@ class BookRepositoryTest(unittest.TestCase):
                 self.assertEqual(cm.exception.message,
                                  f"Error when exporting books number {row}. "
                                  f"The year must be an integer.: year = {year}")
-
 
         # Подмена в данных года на больше текущего года.
         repository_obj[2]['_year'] = 2100
@@ -433,7 +432,7 @@ class BookRepositoryTest(unittest.TestCase):
                                  f"The {data_name} data is missing")
 
     def test_save_and_load_repository(self):
-        """ Проверяет удаление книг из хранилища негативный"""
+        """ Проверяет удаление книг из хранилища негативный. """
         filename = 'book_repository.json'
         with tempfile.TemporaryDirectory() as tmpdir:
             filename = Path(tmpdir, filename)
