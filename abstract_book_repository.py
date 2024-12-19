@@ -32,8 +32,8 @@ class AbstractBookRepository(ABC):
         """
         raise NotImplementedError()
 
-    @abstractmethod
     @property
+    @abstractmethod
     def number_of_books(self) -> int:
         """ Количество книг в хранилище. """
         raise NotImplementedError()

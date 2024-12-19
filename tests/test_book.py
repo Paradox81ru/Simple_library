@@ -10,18 +10,17 @@ class BookTest(unittest.TestCase):
         """ Тестирует создание книги и её строковое отображение. """
         # Новая книга
         book = Book("Толковый словарь", "В.И. Даль", 1982)
-        self.assertEqual(str(book), f"Book titled 'Толковый словарь' of the author В.И. Даль 1982 edition, "
-                                    f"status given out")
+        self.assertEqual(str(book), f"Book titled 'Толковый словарь' of the author В.И. Даль 1982 edition")
         self.assertEqual(repr(book), f"Book('Толковый словарь', 'В.И. Даль', 1982)")
         self.assertEqual(book.id, 0)
-        self.assertFalse(book.is_available)
-        self.assertEqual(book.status.to_str(), 'given out')
+        # self.assertFalse(book.is_available)
+        # self.assertEqual(book.status.to_str(), 'given out')
 
         # Назначение книге идентификатора и изменение статуса.
-        book.id = 2
+        book.set_id(2)
         book.status = True
         self.assertEqual(str(book), f"Book id 2, titled 'Толковый словарь' of the author "
-                                    f"В.И. Даль 1982 edition, status available")
+                                    f"В.И. Даль 1982 edition")
 
     def test_edit_book(self):
         """ Тестирует изменение книги позитивный. """
@@ -33,8 +32,10 @@ class BookTest(unittest.TestCase):
         self.assertEqual(book.title, title)
         self.assertEqual(book.author, author)
         self.assertEqual(book.year, year)
-        self.assertFalse(book.is_available)
-        self.assertEqual(book.status.to_str(), 'given out')
+        self.assertEqual(str(book), f"Book titled 'Толковый словарь' of the author "
+                                    f"В.И. Даль 1982 edition")
+        # self.assertFalse(book.is_available)
+        # self.assertEqual(book.status.to_str(), 'given out')
 
         # Создание книги с годом в виде дробного значения.
         book = Book(title, author, 1801.3)
@@ -43,8 +44,10 @@ class BookTest(unittest.TestCase):
         self.assertEqual(book.author, author)
         # Дробное значение книги преобразовалось в целое число.
         self.assertEqual(book.year, 1801)
-        self.assertFalse(book.is_available)
-        self.assertEqual(book.status.to_str(), 'given out')
+        self.assertEqual(str(book), f"Book titled 'Толковый словарь' of the author "
+                                    f"В.И. Даль 1801 edition")
+        # self.assertFalse(book.is_available)
+        # self.assertEqual(book.status.to_str(), 'given out')
 
         # Создание книги с годом в виде числа, но в текстовом виде.
         book = Book(title, author, '1801')
@@ -53,43 +56,45 @@ class BookTest(unittest.TestCase):
         self.assertEqual(book.author, author)
         # Дробное значение книги преобразовалось в целое число.
         self.assertEqual(book.year, 1801)
-        self.assertFalse(book.is_available)
-        self.assertEqual(book.status.to_str(), 'given out')
+        self.assertEqual(str(book), f"Book titled 'Толковый словарь' of the author "
+                                    f"В.И. Даль 1801 edition")
+        # self.assertFalse(book.is_available)
+        # self.assertEqual(book.status.to_str(), 'given out')
 
-        book.id = 3
-        book.title = "Большой толковый словарь"
-        book.author = "Владимир Иванович Даль"
-        book.year = 2001
-        book.status = BookStatus.AVAILABLE
+        # book.id = 3
+        # book.title = "Большой толковый словарь"
+        # book.author = "Владимир Иванович Даль"
+        # book.year = 2001
+        # book.status = BookStatus.AVAILABLE
 
-        self.assertEqual(book.id, 3)
-        self.assertEqual(book.title, "Большой толковый словарь")
-        self.assertEqual(book.author, "Владимир Иванович Даль")
-        self.assertEqual(book.year, 2001)
-        self.assertTrue(book.is_available)
-        self.assertEqual(book.status.to_str(), 'available')
-        self.assertEqual(str(book), f"Book id 3, titled 'Большой толковый словарь' of the author "
-                                    f"Владимир Иванович Даль 2001 edition, status available")
+        # self.assertEqual(book.id, 3)
+        # self.assertEqual(book.title, "Большой толковый словарь")
+        # self.assertEqual(book.author, "Владимир Иванович Даль")
+        # self.assertEqual(book.year, 2001)
+        # self.assertTrue(book.is_available)
+        # self.assertEqual(book.status.to_str(), 'available')
+        # self.assertEqual(str(book), f"Book id 3, titled 'Большой толковый словарь' of the author "
+        #                             f"Владимир Иванович Даль 2001 edition, status available")
 
         # Дробное значение идентификатора преобразуется в целое число.
-        book.id = 5.9
+        book.set_id(5.9)
         self.assertEqual(book.id, 5)
 
         # Текстовое значение числа идентификатора преобразуется в целое число.
-        book.id ='8'
+        book.set_id('8')
         self.assertEqual(book.id, 8)
 
         # Дробное значение года преобразуется в целое число.
-        book.year = 1999.7
-        self.assertEqual(book.year, 1999)
+        # book.year = 1999.7
+        # self.assertEqual(book.year, 1999)
 
         # Текстовое значение числа года преобразуется в целое число.
-        book.year = '1800'
-        self.assertEqual(book.year, 1800)
+        # book.year = '1800'
+        # self.assertEqual(book.year, 1800)
 
         # Изменение статуса логическим значением.
-        book.status = False
-        self.assertEqual(book.status.to_str(), 'given out')
+        # book.status = False
+        # self.assertEqual(book.status.to_str(), 'given out')
 
     def test_edit_book_negative(self):
         """ Тестирует изменение книги негативный тест. """
@@ -144,54 +149,69 @@ class BookTest(unittest.TestCase):
 
         # Попытка изменение книге идентификатор на текстовое значение.
         with self.assertRaises(ValidationError) as cm:
-            book.id = 'a'
+            book.set_id('a')
         self.assertEqual(cm.exception.message, "The identifier must be an integer.")
         self.assertEqual((cm.exception.var_name, cm.exception.value), ('id', 'a'))
 
         # Попытка изменения книге идентификатор на дробное значение, но в текстовом виде.
         with self.assertRaises(ValidationError) as cm:
-            book.id = '8.1'
+            book.set_id('8.1')
         self.assertEqual(cm.exception.message, "The identifier must be an integer.")
         self.assertEqual((cm.exception.var_name, cm.exception.value), ('id', '8.1'))
 
         # Попытка изменение книге идентификатор на ноль.
         with self.assertRaises(ValidationError) as cm:
-            book.id = 0
+            book.set_id(0)
         self.assertEqual(cm.exception.message, "The identifier must be greater than zero.")
         self.assertEqual((cm.exception.var_name, cm.exception.value), ('id', 0))
 
         # Попытка изменение книге идентификатор на дробное значение между нулём и единицей.
         with self.assertRaises(ValidationError) as cm:
-            book.id = 0.9
+            book.set_id(0.9)
         self.assertEqual(cm.exception.message, "The identifier must be greater than zero.")
         self.assertEqual((cm.exception.var_name, cm.exception.value), ('id', 0.9))
 
         # Попытка изменение книге идентификатор на отрицательное значение.
         with self.assertRaises(ValidationError) as cm:
-            book.id = -1
+            book.set_id(-1)
         self.assertEqual(cm.exception.message, "The identifier must be greater than zero.")
         self.assertEqual((cm.exception.var_name, cm.exception.value), ('id', -1))
 
+        # Попытка изменения заголовка книги.
+        with self.assertRaises(AttributeError) as cm:
+            book.title = "Новое наименование книги"
+        self.assertEqual(cm.exception.args[0], "property 'title' of 'Book' object has no setter")
+
+        # Попытка изменения автора книги.
+        with self.assertRaises(AttributeError) as cm:
+            book.author = "Новый автор книги"
+        self.assertEqual(cm.exception.args[0], "property 'author' of 'Book' object has no setter")
+
+        # Попытка изменения года издания книги.
+        with self.assertRaises(AttributeError) as cm:
+            book.year = 2024
+        self.assertEqual(cm.exception.args[0], "property 'year' of 'Book' object has no setter")
+
         # Попытка изменение книге года на текстовое значение.
-        with self.assertRaises(ValidationError) as cm:
-            book.year = 'ddd'
-        self.assertEqual(cm.exception.message, "The year must be an integer.")
-        self.assertEqual((cm.exception.var_name, cm.exception.value), ('year', 'ddd'))
+        # with self.assertRaises(ValidationError) as cm:
+        #     book.year = 'ddd'
+        # self.assertEqual(cm.exception.message, "The year must be an integer.")
+        # self.assertEqual((cm.exception.var_name, cm.exception.value), ('year', 'ddd'))
 
         # Попытка установить год в виде текстового дробного числа.
-        with self.assertRaises(ValidationError) as cm:
-            book.year = '1988.5'
-        self.assertEqual(cm.exception.message, "The year must be an integer.")
-        self.assertEqual((cm.exception.var_name, cm.exception.value), ('year', '1988.5'))
+        # with self.assertRaises(ValidationError) as cm:
+        #     book.year = '1988.5'
+        # self.assertEqual(cm.exception.message, "The year must be an integer.")
+        # self.assertEqual((cm.exception.var_name, cm.exception.value), ('year', '1988.5'))
 
         # Попытка установить год больше текущего года.
-        with self.assertRaises(ValidationError) as cm:
-            book.year = 2100
-        self.assertEqual(cm.exception.message, "The year cannot be longer than the current year.")
-        self.assertEqual((cm.exception.var_name, cm.exception.value), ('year', 2100))
+        # with self.assertRaises(ValidationError) as cm:
+        #     book.year = 2100
+        # self.assertEqual(cm.exception.message, "The year cannot be longer than the current year.")
+        # self.assertEqual((cm.exception.var_name, cm.exception.value), ('year', 2100))
 
         # Попытка установить неправильное значение статуса.
-        with self.assertRaises(ValidationError) as cm:
-            book.status = 2
-        self.assertEqual(cm.exception.message, "The status must be a logical value.")
-        self.assertEqual((cm.exception.var_name, cm.exception.value), ('status', 2))
+        # with self.assertRaises(ValidationError) as cm:
+        #     book.status = 2
+        # self.assertEqual(cm.exception.message, "The status must be a logical value.")
+        # self.assertEqual((cm.exception.var_name, cm.exception.value), ('status', 2))

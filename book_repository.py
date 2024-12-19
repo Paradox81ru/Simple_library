@@ -6,7 +6,7 @@ from typing import Any
 from abstract_book_repository import AbstractBookRepository
 from book import Book, BookStatus
 from exceptions import BookRepositoryError, ValidationError, BookRepositoryExportException
-from validation import validation_year, validation_id
+from validation import validation_year, validation_id, validation_status
 
 
 class BookRepository(AbstractBookRepository):
@@ -14,6 +14,8 @@ class BookRepository(AbstractBookRepository):
     def __init__(self):
         self._last_id = 0
         self._books: dict[id, Book] = {}
+        self._books_status: dict[id, bool] = {}
+        """ Статусы книги """
 
     def save(self, filename) -> int:
         """
@@ -62,8 +64,11 @@ class BookRepository(AbstractBookRepository):
         :return: Идентификатор добавленной в хранилище книги.
         """
         self._last_id += 1
-        book.id = self._last_id
-        book.status = BookStatus.AVAILABLE
+        # Книге назначается идентификатор,
+        book.set_id(self._last_id)
+        # и устанавливается статус.
+        self._books_status[self._last_id] = BookStatus.AVAILABLE.value
+        # book.status = BookStatus.AVAILABLE
         self._books[self._last_id] = book
         return book.id
 
@@ -79,9 +84,10 @@ class BookRepository(AbstractBookRepository):
         """
         self._is_repository_empty('changing status')
         try:
-            book = self._books[_id]
-            book.status = status
-            return book
+            # book = self._books[_id]
+            # book.status = status
+            self._books_status[_id] = validation_status(status)
+            return self._books[_id]
         except KeyError:
             raise BookRepositoryError(f"The book with the ID {_id} is missing.")
         except ValidationError as err:
@@ -141,29 +147,35 @@ class BookRepository(AbstractBookRepository):
             raise BookRepositoryError(err.message)
         return tuple(filter(lambda b: b.year == year, self._books.values()))
 
-    def _import(self) -> list[dict[str: Any]]:
-        """ Преобразует список всех книг в список простых объект. """
-        return [copy(book.to_dict()) for book in self.all_books]
+    def _import(self) -> tuple[list[dict[str: Any]], dict]:
+        """ Преобразует список всех книг в список простых объектов и добавляет словарь статусов книг """
+        return [copy(book.to_dict()) for book in self.all_books], self._books_status
 
-    def _export(self, obj_list):
+    def _export(self, book_list: list[dict[str: Any]], status_dict: dict):
         """
         Заполняет хранилище из списка простых объектов.
-        :param obj_list:
+        :param book_list: Список книг и словарь статусов этих книг.
+        :param status_dict: Словарь статусов.
         :raises BookRepositoryExportException: Ошибка при экспорте данных.
         """
         last_id = 0
         i = 1
+
         try:
-            for obj in obj_list:
-                book = Book(obj['_title'], obj['_author'], obj['_year'])
-                book.id = obj['_id']
-                book.status = obj['_status']
+            for _id, status in status_dict.items():
+                self._books_status[validation_id(_id)] = validation_status(status)
+
+            for _book in book_list:
+                book = Book(_book['_title'], _book['_author'], _book['_year'])
+                book.set_id(_book['_id'])
+                # book.status = _book['_status']
                 self._books[book.id] = book
                 # Сразу же ищется самый последний (он же самый большой) идентификатор.
                 if book.id > last_id:
                     last_id = book.id
                 i += 1
         except ValidationError as err:
+            self._books_status = {}
             self._books = {}
             raise BookRepositoryExportException(f"Error when exporting books number {i}. "
                                                 f"{err.message}: {err.var_name} = {err.value}")

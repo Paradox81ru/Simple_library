@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 
 from enums import BookStatus
 from validation import validation_id, validation_year, validation_status, validation_title, validation_author
@@ -15,23 +16,18 @@ class Book:
         :raises ValidationError: Ошибка при указании заголовка, автора или года выпуска книги.
         """
         self._id = 0
-        self._title = ''
-        self.title = title
-        self._author = ''
-        self.author = author
-        self._year = 0
-        self.year = year
-        self._status: bool = False
+        self._title = validation_title(title)
+        self._author = validation_author(author)
+        self._year = validation_year(year)
 
     @property
     def id(self) -> int:
         """ Идентификатор книги. """
         return self._id
 
-    @id.setter
-    def id(self, val: int):
+    def set_id(self, val: int):
         """
-        Идентификатор книги.
+        Устанавливает идентификатор книги.
         :param val:
         :raises ValidationError: Ошибка проверки корректности идентификатора.
         """
@@ -42,64 +38,37 @@ class Book:
         """ Название книги. """
         return self._title
 
-    @title.setter
-    def title(self, val: str):
-        """
-        Название книги.
-        :param val:
-        :raises ValidationError: Ошибка проверки корректности заголовка.
-        """
-        self._title = validation_title(val)
-
     @property
     def author(self) -> str:
         """ Автор """
         return self._author
-
-    @author.setter
-    def author(self, val: str):
-        """
-        Автор.
-        :param val:
-        :raises ValidationError: Ошибка проверки корректности автора.
-        """
-        self._author = validation_author(val)
 
     @property
     def year(self) -> int:
         """ Год издания. """
         return self._year
 
-    @year.setter
-    def year(self, val: int):
-        """
-        Год издания.
-        :param val:
-        :raises ValidationError: Ошибка при указании года выпуска книги.
-        """
-        self._year = validation_year(val)
-
-    @property
-    def status(self) -> BookStatus:
-        """
-        Статус книги.
-        :return: Если True, то 'в наличии', иначе 'выдана'.
-        """
-        return BookStatus.get_status(self._status)
-
-    @status.setter
-    def status(self, val: BookStatus | bool):
-        """
-        Статус книги.
-        :param val: Если True, то 'в наличии', иначе 'выдана'.
-        :raises ValidationError: Статус должен быть логическим значением.
-        """
-        self._status = validation_status(val)
-
-    @property
-    def is_available(self) -> bool:
-        """ Доступна ли книга. """
-        return self._status
+    # @property
+    # def status(self) -> BookStatus:
+    #     """
+    #     Статус книги.
+    #     :return: Если True, то 'в наличии', иначе 'выдана'.
+    #     """
+    #     return BookStatus.get_status(self._status)
+    #
+    # @status.setter
+    # def status(self, val: BookStatus | bool):
+    #     """
+    #     Статус книги.
+    #     :param val: Если True, то 'в наличии', иначе 'выдана'.
+    #     :raises ValidationError: Статус должен быть логическим значением.
+    #     """
+    #     self._status = validation_status(val)
+    #
+    # @property
+    # def is_available(self) -> bool:
+    #     """ Доступна ли книга. """
+    #     return self._status
 
     def to_dict(self):
         """ Преобразование данных в словарь. """
@@ -111,8 +80,7 @@ class Book:
 
     def __str__(self):
         _id = f"id {self._id}, " if self._id > 0 else ""
-        return (f"Book {_id}titled '{self._title}' of the author {self._author} {self._year} edition, "
-                f"status {self.status.to_str()}")
+        return (f"Book {_id}titled '{self._title}' of the author {self._author} {self._year} edition")
 
     def __repr__(self):
         return f"Book('{self._title}', '{self._author}', {self._year})"
