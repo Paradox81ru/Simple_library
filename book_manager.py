@@ -1,4 +1,4 @@
-from abstract_book_repository import AbstractBookRepository
+from abstract_class import AbstractBookRepository
 from book import Book, BookStatus
 from enums import SearchCriteria
 from exceptions import BookManagerError, BookRepositoryError, ValidationError

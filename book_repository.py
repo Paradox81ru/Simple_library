@@ -38,7 +38,8 @@ class BookRepository(AbstractBookRepository):
             return 0
         filename = Path(filename)
         with open(filename, 'w') as f:
-            json.dump(self._import(), f)
+            json.dump(self._repository_export.import_data(), f)
+            # json.dump(self._import(), f)
         return self.number_of_books
 
     def load(self, filename) -> int:
@@ -53,7 +54,8 @@ class BookRepository(AbstractBookRepository):
         if not filename.exists():
             raise BookRepositoryError(f"The file '{filename}' with the saved books was not found")
         with open(filename, 'r') as f:
-            self._export(json.load(f))
+            self._last_id = self._repository_export.export_data(json.load(f), (self._books, self._books_status))
+            # self._export(json.load(f))
         return self.number_of_books
 
     @property
@@ -89,11 +91,11 @@ class BookRepository(AbstractBookRepository):
         :raises BookRepositoryError: Книга с указанным идентификатором отсутствует;
         """
         try:
-            return self.number_of_books[_id]
+            return BookStatus.get_status(self._books_status[_id])
         except KeyError:
             raise BookRepositoryError(f"The book with the ID {_id} is missing.")
 
-    def changing_status_book(self, _id: int, status: BookStatus) -> Book:
+    def changing_status_book(self, _id: int, status: bool | BookStatus) -> Book:
         """
         Изменяет статус книги.
         :param _id: Идентификатор книги, статус которой надо изменить.

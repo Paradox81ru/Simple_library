@@ -5,11 +5,11 @@ from book import Book, BookStatus
 
 
 class AbstractBookRepositoryExport(ABC):
-    """ Абстрактный класс экспорта и импорта данных """
+    """ Абстрактный класс экспорта и импорта книг в хранилище. """
     def __init__(self, book_repository: 'AbstractBookRepository'):
         """
         Конструктор класса
-        :param book_repository: ХранилищеЮ, в которе производится импорт-экспорт.
+        :param book_repository: Хранилище, в которе производится импорт-экспорт.
         """
         self._book_repository = book_repository
 
@@ -43,7 +43,7 @@ class AbstractBookRepository(ABC):
         """ Книги. """
         self._books_status: dict[int, bool] = {}
         """ Статусы книги. """
-        self._repository_export: AbstractBookRepository | None = None
+        self._repository_export: AbstractBookRepositoryExport | None = None
 
     def set_repository_export(self, repository_export: AbstractBookRepositoryExport):
         """

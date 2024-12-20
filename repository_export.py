@@ -9,26 +9,21 @@ from validation import validation_id, validation_status
 
 
 class BookRepositoryExport(AbstractBookRepositoryExport):
+    """ Конкретный класс экспорта и импорта книг в хранилище. """
     def __init__(self, book_repository: 'AbstractBookRepository'):
         super().__init__(book_repository)
         self._last_id = 0
 
-    #     """
-    #     Конструктор класса
-    #     :param book_repository: ХранилищеЮ, в которе производится импорт-экспорт.
-    #     """
-    #     self._book_repository = book_repository
-
     def import_data(self) -> tuple[dict[int, dict[str: Any]], dict[int, bool]]:
         """
         Импортирует данные.
-        :return: Возвращает кортеж, вначале список книг, а потом словарь статусов этих книг.
+        :return: Возвращает кортеж, словаря книг, и словаря статусов этих книг.
         """
         books: dict[int, dict[str: Any]] = {}
         books_status: dict[int, bool] = {}
-        for _id, book in self._book_repository.all_books:
-            books[_id] = copy(book.to_dict())
-            books_status[_id] = self._book_repository.get_status_book(_id).value
+        for book in self._book_repository.all_books:
+            books[book.id] = copy(book.to_dict())
+            books_status[book.id] = self._book_repository.get_status_book(book.id).value
         return books, books_status
 
     def export_data(self, source_data: tuple[dict[int, dict[str: Any]], dict[int, bool]],

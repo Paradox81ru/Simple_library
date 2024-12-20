@@ -35,6 +35,6 @@ class BookStatus(Enum):
         return 'available' if self.value else 'given out'
 
     @classmethod
-    def get_status(cls, status: bool):
+    def get_status(cls, status: bool) -> 'BookStatus':
         """ Возвращает статус по логическому значению. """
         return cls.AVAILABLE if status else cls.GIVEN_OUT

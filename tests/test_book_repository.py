@@ -2,28 +2,31 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from abstract_class import AbstractBookRepositoryExport
 from book import Book, BookStatus
 from book_repository import BookRepository
 from exceptions import BookRepositoryError, BookRepositoryExportException, ValidationError
+from repository_export import BookRepositoryExport
 
 
 class BookRepositoryTest(unittest.TestCase):
     """ Тестирование хранилища книг. """
 
     def setUp(self):
-        self.books = (Book("Толковый словарь", "В.И. Даль", 1982),
-                      Book("Ночной дозор", "Сергей Лукьяненко", 1998),
-                      Book("Дневной дозор", "Сергей Лукьяненко", 2000),
-                      Book("Звездные войны. Новая надежда", "Алан Дин Фостер.", 1976),
-                      Book("Звездные войны. Империя наносит ответный удар", "Дональд Ф", 1980),
-                      Book("Звездные войны. Возвращение джедая", "Джеймс Кан", 1983))
+        self.books = ((Book("Толковый словарь", "В.И. Даль", 1982), True),
+                      (Book("Ночной дозор", "Сергей Лукьяненко", 1998), True),
+                      (Book("Дневной дозор", "Сергей Лукьяненко", 2000), True),
+                      (Book("Звездные войны. Новая надежда", "Алан Дин Фостер.", 1976), False),
+                      (Book("Звездные войны. Империя наносит ответный удар", "Дональд Ф", 1980), True),
+                      (Book("Звездные войны. Возвращение джедая", "Джеймс Кан", 1983), False))
 
     def _get_repository_filled_with_books(self) -> BookRepository:
         """ Возвращает заполненное книгами хранилище """
         book_repository = BookRepository()
         # Хранилище заполняется книгами
-        for book in self.books:
-            book_repository.add_book(book)
+        for book, status in self.books:
+            _id = book_repository.add_book(book)
+            book_repository.changing_status_book(_id, status)
         return book_repository
 
     def test_add_book(self):
@@ -458,6 +461,9 @@ class BookRepositoryTest(unittest.TestCase):
 
             # Создаётся пустое хранилище
             book_repository = BookRepository()
+            repository_export: AbstractBookRepositoryExport = BookRepositoryExport(book_repository)
+            book_repository.set_repository_export(repository_export)
+
             save_num = book_repository.save(filename)
             # Проверка, что при пустом хранилище количество сохранённых данных равно нулю,
             self.assertEqual(save_num, 0)
@@ -466,6 +472,8 @@ class BookRepositoryTest(unittest.TestCase):
 
             # Далее создаётся заполненное хранилище книг.
             book_repository = self._get_repository_filled_with_books()
+            repository_export: AbstractBookRepositoryExport = BookRepositoryExport(book_repository)
+            book_repository.set_repository_export(repository_export)
             number_of_books = len(self.books)
             # Проверка, что хранилище заполнено книгами.
             self.assertEqual(book_repository.number_of_books, number_of_books)
@@ -477,6 +485,8 @@ class BookRepositoryTest(unittest.TestCase):
 
             # Теперь создаётся другое хранилище книг,
             other_book_repository = BookRepository()
+            repository_export: AbstractBookRepositoryExport = BookRepositoryExport(other_book_repository)
+            other_book_repository.set_repository_export(repository_export)
             # и туда загружаются книги.
             load_num = other_book_repository.load(filename)
             # Проверка возвращаемого значение количества загруженных книг.
@@ -484,7 +494,7 @@ class BookRepositoryTest(unittest.TestCase):
             # Так же проверка, что в хранилище действительно столько книг, сколько и должно быть.
             self.assertEqual(other_book_repository.number_of_books, number_of_books)
             self.assertSequenceEqual(
-                tuple(book.title for book in self.books),
+                tuple(book.title for book in map(lambda x: x[0], self.books)),
                 tuple(book.title for book in other_book_repository.all_books))
             last_id = number_of_books
             # Проверяется, что последний идентификатор хранилища верный.
