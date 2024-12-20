@@ -33,24 +33,28 @@ class BookRepositoryTest(unittest.TestCase):
         """ Проверяет добавление книг в хранилище. """
         book_repository = BookRepository()
         self.assertEqual(book_repository.number_of_books, 0)
-        book_1 = self.books[0]
+        book_1, status = self.books[0]
 
         # В хранилище добавляется книга,
-        book_repository.add_book(book_1)
+        _id = book_repository.add_book(book_1)
+        book_repository.changing_status_book(_id, status)
         # и проверяется, что она действительно была добавлена
         self.assertEqual(book_repository.number_of_books, 1)
         self.assertGreater(book_1.id, 0)
         # self.assertTrue(book_1.status.value)
 
-        book_2 = self.books[1]
+        book_2, status = self.books[1]
 
         # В хранилище добавляется вторая книга,
-        book_repository.add_book(book_2)
+        _id = book_repository.add_book(book_2)
+        book_repository.changing_status_book(_id, status)
         # и проверяется, что она действительно была добавлена
         self.assertEqual(book_repository.number_of_books, 2)
 
-        for i, book in enumerate(self.books[2:], start=3):
-            book_repository.add_book(book)
+        for i, t_book in enumerate(self.books[2:], start=3):
+            book, status = t_book
+            _id = book_repository.add_book(book)
+            book_repository.changing_status_book(_id, status)
             with self.subTest(f"{book.author} - {book.title}"):
                 self.assertEqual(book_repository.number_of_books, i)
 
@@ -101,8 +105,10 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(cm.exception.message, "It is impossible to delete books because the repository is empty.")
 
         # Далее хранилище заполняется книгами.
-        for i, book in enumerate(self.books, start=3):
-            book_repository.add_book(book)
+        for i, t_book in enumerate(self.books, start=3):
+            book, status = t_book
+            _id =  book_repository.add_book(book)
+            book_repository.changing_status_book(_id, status)
         number_of_books = len(self.books)
         # Проверка, что хранилище заполнено книгами.
         self.assertEqual(book_repository.number_of_books, number_of_books)
@@ -187,8 +193,10 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(books, ())
 
         # Хранилище заполняется книгами
-        for i, book in enumerate(self.books, start=3):
-            book_repository.add_book(book)
+        for i, t_book in enumerate(self.books, start=3):
+            book, status = t_book
+            _id =  book_repository.add_book(book)
+            book_repository.changing_status_book(_id, status)
         number_of_books = len(self.books)
         # Проверка, что хранилище заполнен книгами
         self.assertEqual(book_repository.number_of_books, number_of_books)
@@ -273,23 +281,24 @@ class BookRepositoryTest(unittest.TestCase):
         """ Проверяет изменение статуса книги """
         book_repository = self._get_repository_filled_with_books()
 
-        book = book_repository.get_book_by_id(2)
-        # Проверка, что книга доступна
-        # self.assertEqual(book.status, BookStatus.AVAILABLE)
+        self.assertEqual(book_repository.get_status_book(2), BookStatus.AVAILABLE)
+        self.assertEqual(book_repository.get_status_book(4), BookStatus.GIVEN_OUT)
+        self.assertEqual(book_repository.get_status_book(5), BookStatus.AVAILABLE)
+        self.assertEqual(book_repository.get_status_book(6), BookStatus.GIVEN_OUT)
 
         # Изменяется статус книги.
-        # changed_book = book_repository.changing_status_book(2, BookStatus.GIVEN_OUT)
-        # self.assertEqual(changed_book.status, BookStatus.GIVEN_OUT)
-        # и проверка, что статус книги изменился.
-        # find_book = book_repository.get_book_by_id(2)
-        # self.assertEqual(find_book.status, BookStatus.GIVEN_OUT)
-
+        book_repository.changing_status_book(2, BookStatus.GIVEN_OUT)
+        self.assertEqual(book_repository.get_status_book(2), BookStatus.GIVEN_OUT)
         # Возвращение статуса книги.
-        # changed_book = book_repository.changing_status_book(2, BookStatus.AVAILABLE)
-        # self.assertEqual(changed_book.status, BookStatus.AVAILABLE)
-        # и проверка, что статус книги вернулся к доступной.
-        # find_book = book_repository.get_book_by_id(2)
-        # self.assertEqual(find_book.status, BookStatus.AVAILABLE)
+        book_repository.changing_status_book(2, BookStatus.AVAILABLE)
+        self.assertEqual(book_repository.get_status_book(2), BookStatus.AVAILABLE)
+
+        # Изменяется статус книги на тот же, который в данный момент.
+        book_repository.changing_status_book(4, BookStatus.GIVEN_OUT)
+        self.assertEqual(book_repository.get_status_book(4), BookStatus.GIVEN_OUT)
+        # Изменяется статус книги на противоположенный.
+        book_repository.changing_status_book(4, BookStatus.AVAILABLE)
+        self.assertEqual(book_repository.get_status_book(4), BookStatus.AVAILABLE)
 
     def test_changing_book_status_negative(self):
         """ Проверяет изменение статуса книги негативный. """
