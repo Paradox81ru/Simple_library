@@ -1,21 +1,30 @@
+import logging
 from copy import copy
 from pathlib import Path
 import json
 from typing import Any
 
-from abstract_book_repository import AbstractBookRepository
+from abstract_class import AbstractBookRepository, AbstractBookRepositoryExport
+# from app import LOGGER_FILENAME
 from book import Book, BookStatus
 from exceptions import BookRepositoryError, ValidationError, BookRepositoryExportException
+from helper import Logger
+# from helper import get_logger
 from validation import validation_year, validation_id, validation_status
+
+
+logger = Logger.get_logger('book_repository', logging.DEBUG)
 
 
 class BookRepository(AbstractBookRepository):
     """ Хранилище книг. """
-    def __init__(self):
-        self._last_id = 0
-        self._books: dict[id, Book] = {}
-        self._books_status: dict[id, bool] = {}
-        """ Статусы книги """
+    # def __init__(self):
+    #     self._last_id = 0
+    #     self._books: dict[int, Book] = {}
+    #     """ Книги. """
+    #     self._books_status: dict[int, bool] = {}
+    #     """ Статусы книги. """
+    #     self._repository_export: AbstractBookRepository = None
 
     def save(self, filename) -> int:
         """
@@ -71,6 +80,18 @@ class BookRepository(AbstractBookRepository):
         # book.status = BookStatus.AVAILABLE
         self._books[self._last_id] = book
         return book.id
+
+    def get_status_book(self, _id) -> BookStatus:
+        """
+        Возвращает статус книги
+        :param _id:
+        :return:
+        :raises BookRepositoryError: Книга с указанным идентификатором отсутствует;
+        """
+        try:
+            return self.number_of_books[_id]
+        except KeyError:
+            raise BookRepositoryError(f"The book with the ID {_id} is missing.")
 
     def changing_status_book(self, _id: int, status: BookStatus) -> Book:
         """
@@ -147,41 +168,71 @@ class BookRepository(AbstractBookRepository):
             raise BookRepositoryError(err.message)
         return tuple(filter(lambda b: b.year == year, self._books.values()))
 
-    def _import(self) -> tuple[list[dict[str: Any]], dict]:
+    def _import(self) -> tuple[list[dict[str: Any]], dict[int, bool]]:
         """ Преобразует список всех книг в список простых объектов и добавляет словарь статусов книг """
         return [copy(book.to_dict()) for book in self.all_books], self._books_status
 
-    def _export(self, book_list: list[dict[str: Any]], status_dict: dict):
+    def _export_statuses(self, row_num, status_dict: dict[int, bool]):
         """
-        Заполняет хранилище из списка простых объектов.
-        :param book_list: Список книг и словарь статусов этих книг.
-        :param status_dict: Словарь статусов.
-        :raises BookRepositoryExportException: Ошибка при экспорте данных.
+        Экспортирует статусы книг.
+        :param row_num: Счётчик экспортируемых строк.
+        :param status_dict: Словарь с данными для экспорта.
+        :raises ValidationError: Ошибка валидации данных.
+        """
+        for _id, status in status_dict.items():
+            _id = validation_id(_id)
+            # При экспорте проверятся, чтобы такой идентифкатор не превышал самый большой идентификатор в хранилище.
+            if _id > self._last_id:
+                ValidationError(f'The identifier does not exist in the book store.', 'status', _id)
+            self._books_status[validation_id(_id)] = validation_status(status)
+            row_num[0] = row_num[0] + 1
+
+    def _export_book(self, row_num, book_list: list[dict[str: Any]]) -> int:
+        """
+        Экспортирует книги
+        :param row_num: Счётчик экспортируемых строк.
+        :param book_list: Словарь с данными для экспорта.
+        :return Самый последний (он же самый большой) идентификатор.
+        :raises ValidationError: Ошибка валидации данных.
+        :raises KeyError: Данные экспорта отсутствуют.
         """
         last_id = 0
-        i = 1
 
+        for _book in book_list:
+            book = Book(_book['_title'], _book['_author'], _book['_year'])
+            book.set_id(_book['_id'])
+            self._books[book.id] = book
+            # Сразу же ищется самый последний (он же самый большой) идентификатор.
+            if book.id > last_id:
+                last_id = book.id
+            row_num[0] = row_num[0] + 1
+
+        return last_id
+
+    def _export(self, data: tuple[list[dict[str: Any]], dict[int, bool]]):
+        """
+        Заполняет хранилище из списка простых объектов.
+        :param data: Данные для экспорта в виде кортежа: [book_list, status_dict].
+        """
+        book_list, status_dict = data
+        row_num = []
         try:
-            for _id, status in status_dict.items():
-                self._books_status[validation_id(_id)] = validation_status(status)
-
-            for _book in book_list:
-                book = Book(_book['_title'], _book['_author'], _book['_year'])
-                book.set_id(_book['_id'])
-                # book.status = _book['_status']
-                self._books[book.id] = book
-                # Сразу же ищется самый последний (он же самый большой) идентификатор.
-                if book.id > last_id:
-                    last_id = book.id
-                i += 1
+            # logger.debug(status_dict)
+            row_num = [1]
+            # После экспорта книг, сразу же устанавливается самый последний идентификатор.
+            self._last_id = self._export_book(row_num, book_list)
+            row_num = [1]
+            self._export_statuses(row_num, status_dict)
         except ValidationError as err:
             self._books_status = {}
             self._books = {}
-            raise BookRepositoryExportException(f"Error when exporting books number {i}. "
+            raise BookRepositoryExportException(f"Error when exporting books number {row_num[0]}. "
                                                 f"{err.message}: {err.var_name} = {err.value}")
         except KeyError as err:
-            raise BookRepositoryExportException(f"Error when exporting books number {i}. The {err.args[0][1:]} data is missing")
-        self._last_id = last_id
+            self._books_status = {}
+            self._books = {}
+            raise BookRepositoryExportException(f"Error when exporting books number {row_num[0]}. "
+                                                f"The {err.args[0][1:]} data is missing")
 
     def _to_json(self) -> str:
         """ Преобразует список всех книг в json строку. """

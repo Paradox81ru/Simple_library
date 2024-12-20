@@ -1,17 +1,26 @@
 from pathlib import Path
 
+from abstract_class import AbstractBookRepository, AbstractBookRepositoryExport
 from book_manager import BookManager
 from book_repository import BookRepository
 from exceptions import BookRepositoryError, BookRepositoryExportException
 from helper import clear_display, print_awaiting_message
 from library_console import LibraryConsole
+from repository_export import BookRepositoryExport
+
+
+# LOGGER_FILENAME = "library.log"
+# logger = get_logger('app', LOGGER_FILENAME, is_debug_mode=True)
 
 
 class SimpleLibrary:
     REPOSITORY_FILENAME = "book_repository.json"
 
     def __init__(self):
-        self._book_manager = BookManager(BookRepository())
+        book_repository: AbstractBookRepository = BookRepository()
+        repository_export: AbstractBookRepositoryExport = BookRepositoryExport(book_repository)
+        book_repository.set_repository_export(repository_export)
+        self._book_manager = BookManager(book_repository)
         self._library_console = LibraryConsole(self, self._book_manager)
 
     def run(self):

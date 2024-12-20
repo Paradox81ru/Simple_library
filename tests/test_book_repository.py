@@ -4,7 +4,7 @@ from pathlib import Path
 
 from book import Book, BookStatus
 from book_repository import BookRepository
-from exceptions import BookRepositoryError, BookRepositoryExportException
+from exceptions import BookRepositoryError, BookRepositoryExportException, ValidationError
 
 
 class BookRepositoryTest(unittest.TestCase):
@@ -346,7 +346,7 @@ class BookRepositoryTest(unittest.TestCase):
             with self.subTest(f"row={row}, id={_id}"):
                 repository_obj[_row]['_id'] = _id
                 with self.assertRaises(BookRepositoryExportException) as cm:
-                    book_repository_1._export(repository_obj, book_status)
+                    book_repository_1._export((repository_obj, book_status))
                 self.assertEqual(cm.exception.message,
                                  f"Error when exporting books number {row}. "
                                  f"The identifier must be an integer.: id = {_id}")
@@ -357,7 +357,7 @@ class BookRepositoryTest(unittest.TestCase):
             with self.subTest(f"row={row}, id={_id}"):
                 repository_obj[_row]['_id'] = _id
                 with self.assertRaises(BookRepositoryExportException) as cm:
-                    book_repository_1._export(repository_obj, book_status)
+                    book_repository_1._export((repository_obj, book_status))
                 self.assertEqual(cm.exception.message,
                                  f"Error when exporting books number {row}. "
                                  f"The identifier must be greater than zero.: id = {_id}")
@@ -371,7 +371,7 @@ class BookRepositoryTest(unittest.TestCase):
             with self.subTest(f"row={row}, year={year}"):
                 repository_obj[_row]['_year'] = year
                 with self.assertRaises(BookRepositoryExportException) as cm:
-                    book_repository_1._export(repository_obj, book_status)
+                    book_repository_1._export((repository_obj, book_status))
                 self.assertEqual(cm.exception.message,
                                  f"Error when exporting books number {row}. "
                                  f"The year must be an integer.: year = {year}")
@@ -379,7 +379,7 @@ class BookRepositoryTest(unittest.TestCase):
         # Подмена в данных года на больше текущего года.
         repository_obj[2]['_year'] = 2100
         with self.assertRaises(BookRepositoryExportException) as cm:
-            book_repository_1._export(repository_obj, book_status)
+            book_repository_1._export((repository_obj, book_status))
         self.assertEqual(cm.exception.message,
                          "Error when exporting books number 3. "
                          "The year cannot be longer than the current year.: year = 2100")
@@ -387,22 +387,10 @@ class BookRepositoryTest(unittest.TestCase):
         # И ещё раз импорт всех книги в список простых объектов.
         repository_obj, book_status = book_repository._import()
 
-        # Проверка подмены значения статус на недопустимый.
-        for _id, status in ((5, ''), (4, 2), (3, 'true')):
-            # row = _row + 1
-            with self.subTest(f"row={row}, status={status}"):
-                # repository_obj[_row]['_status'] = status
-                book_status[_id] = status
-                with self.assertRaises(BookRepositoryExportException) as cm:
-                    book_repository_1._export(repository_obj, book_status)
-                self.assertEqual(cm.exception.message,
-                                 f"Error when exporting books number {_id}. "
-                                 f"The status must be a logical value.: status = {status}")
-
         # Подмена в данных заголовка на слишком короткий.
         repository_obj[2]["_title"] = 'По'
         with self.assertRaises(BookRepositoryExportException) as cm:
-            book_repository_1._export(repository_obj, book_status)
+            book_repository_1._export((repository_obj, book_status))
         self.assertEqual(cm.exception.message,
                          "Error when exporting books number 3. "
                          "The length of the book title should be from 3 to 50 characters.: title = По")
@@ -413,7 +401,7 @@ class BookRepositoryTest(unittest.TestCase):
             with self.subTest(f"row={row}, author={author}"):
                 repository_obj[_row]['_author'] = author
                 with self.assertRaises(BookRepositoryExportException) as cm:
-                    book_repository_1._export(repository_obj, book_status)
+                    book_repository_1._export((repository_obj, book_status))
                 self.assertEqual(cm.exception.message,
                                  f"Error when exporting books number {row}. "
                                  f"The length of the book author should be from 2 to 25 characters.: author = {author}")
@@ -422,15 +410,43 @@ class BookRepositoryTest(unittest.TestCase):
         repository_obj, book_status = book_repository._import()
 
         # Проверка вообще удаление из данных информации.
-        for _row, data_name in ((5, 'id'), (4, 'title'), (3, 'author'), (2, 'year'), (1, 'status')):
+        for _row, data_name in ((5, 'id'), (4, 'title'), (3, 'author'), (2, 'year')):
             row = _row + 1
             with self.subTest(f"row={row}, data_name={data_name}"):
                 del repository_obj[_row][f"_{data_name}"]
                 with self.assertRaises(BookRepositoryExportException) as cm:
-                    book_repository_1._export(repository_obj, book_status)
+                    book_repository_1._export((repository_obj, book_status))
                 self.assertEqual(cm.exception.message,
                                  f"Error when exporting books number {row}. "
                                  f"The {data_name} data is missing")
+
+        # И ещё раз импорт всех книги в список простых объектов.
+        repository_obj, book_status = book_repository._import()
+
+        status_list_id = tuple(book_status.keys())
+        # Проверка подмены значения статус на недопустимый.
+        for _row, status in ((5, ''), (4, 2), (3, 'true')):
+            row = _row + 1
+            _id = status_list_id[_row]
+            with self.subTest(f"id={_id}, status={status}"):
+                # repository_obj[_row]['_status'] = status
+                book_status[_id] = status
+                with self.assertRaises(BookRepositoryExportException) as cm:
+                    book_repository_1._export((repository_obj, book_status))
+                self.assertEqual(cm.exception.message,
+                                 f"Error when exporting books number {row}. "
+                                 f"The status must be a logical value.: status = {status}")
+
+        # Создание нового хранилища.
+        book_repository_2 = BookRepository()
+
+        for _id in ('', "'6.2'", "'q'"):
+            book_status = {_id: True}
+            with self.assertRaises(ValidationError) as cm:
+                book_repository_2._export_statuses([1], book_status)
+            self.assertEqual(cm.exception.message,
+                             f"The identifier must be an integer.")
+            self.assertEqual(cm.exception.value, _id)
 
     def test_save_and_load_repository(self):
         """ Проверяет удаление книг из хранилища негативный. """
