@@ -14,20 +14,22 @@ class BookRepositoryExport(AbstractBookRepositoryExport):
         super().__init__(book_repository)
         self._last_id = 0
 
-    def import_data(self) -> tuple[dict[int, dict[str: Any]], dict[int, bool]]:
+    def import_data(self) -> tuple[list[dict[str: Any]], dict[int, bool]]:
         """
         Импортирует данные.
         :return: Возвращает кортеж, словаря книг, и словаря статусов этих книг.
         """
-        books: dict[int, dict[str: Any]] = {}
+        # books: dict[int, dict[str: Any]] = {}
+        books: list[dict[str: Any]] = []
         books_status: dict[int, bool] = {}
         for book in self._book_repository.all_books:
-            books[book.id] = copy(book.to_dict())
+            # books[book.id] = copy(book.to_dict())
+            books.append(copy(book.to_dict()))
             books_status[book.id] = self._book_repository.get_status_book(book.id).value
         return books, books_status
 
-    def export_data(self, source_data: tuple[dict[int, dict[str: Any]], dict[int, bool]],
-                    destination_data: tuple[dict[int, dict[str: Any]], dict[int, bool]]) -> int:
+    def export_data(self, source_data: tuple[list[dict[str: Any]], dict[int, bool]],
+                    destination_data: tuple[list[dict[str: Any]], dict[int, bool]]) -> int:
         """
         Заполняет хранилище из списка простых объектов.
         :param source_data: Данные для экспорта в виде кортежа: [book_list, status_dict].
@@ -58,7 +60,7 @@ class BookRepositoryExport(AbstractBookRepositoryExport):
 
         return self._last_id
 
-    def _export_book(self, row_num, source_book_list: dict[int, dict[str: Any]],
+    def _export_book(self, row_num, source_book_list: list[dict[str: Any]],
                      destination_book_list: dict[int, dict[str: Any]]) -> int:
         """
         Экспортирует книги
@@ -71,10 +73,10 @@ class BookRepositoryExport(AbstractBookRepositoryExport):
         """
         last_id = 0
 
-        for _id, _book in source_book_list.items():
+        for _book in source_book_list:
             book = Book(_book['_title'], _book['_author'], _book['_year'])
             book.set_id(_book['_id'])
-            destination_book_list[validation_id(_id)] = book
+            destination_book_list[validation_id(book.id)] = book
             # Сразу же ищется самый последний (он же самый большой) идентификатор.
             if book.id > last_id:
                 last_id = book.id
