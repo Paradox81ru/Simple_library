@@ -21,7 +21,7 @@ class SimpleLibrary:
         repository_export: AbstractBookRepositoryExport = BookRepositoryExport(book_repository)
         book_repository.set_repository_export(repository_export)
         self._book_manager = BookManager(book_repository)
-        self._library_console = LibraryConsole(self, self._book_manager)
+        self._library_console = LibraryConsole(self._book_manager)
 
     def run(self):
         """ Запуск работы приложения """

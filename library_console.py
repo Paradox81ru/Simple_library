@@ -21,8 +21,7 @@ class LibraryConsole:
     DISPLAY_ALL_BOOKS = '4'
     CHANGE_BOOK_STATUS = '5'
 
-    def __init__(self, library: 'SimpleLibrary', book_manager: BookManager):
-        self._library = library
+    def __init__(self, book_manager: BookManager):
         self._book_manager = book_manager
 
     def _show_menu(self):
@@ -75,13 +74,10 @@ class LibraryConsole:
         try:
             clear_display()
             title = self._input_validation(self._input_title)
-            # title = self._input_title()
             clear_display()
             author = self._input_validation(self._input_author)
-            # author = self._input_author()
             clear_display()
             year = self._input_validation(self._input_year)
-            # year = self._input_year()
         except InputStop:
             return
 
@@ -229,22 +225,6 @@ class LibraryConsole:
             self._check_cancel_input(num)
             return validation_id(num)
         return wrap
-
-    # def _input_id(self, msg):
-    #     """
-    #     Запрос ввода идентификатора книги
-    #     :param msg: Сообщение при вводе идентификатора
-    #     :return: Введённый идентификатор.
-    #     :raises InputStop: Отменить ввод.
-    #     """
-    #     while True:
-    #         try:
-    #             num = input(msg).strip().lower()
-    #             self._check_cancel_input(num)
-    #             return validation_id(num)
-    #         except ValidationError as err:
-    #             clear_display()
-    #             print(f"Error: {err.message} {self.TRY_AGAIN}")
 
     def _input_title(self):
         """

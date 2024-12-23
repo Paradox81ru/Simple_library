@@ -18,13 +18,6 @@ logger = Logger.get_logger('book_repository', logging.DEBUG)
 
 class BookRepository(AbstractBookRepository):
     """ Хранилище книг. """
-    # def __init__(self):
-    #     self._last_id = 0
-    #     self._books: dict[int, Book] = {}
-    #     """ Книги. """
-    #     self._books_status: dict[int, bool] = {}
-    #     """ Статусы книги. """
-    #     self._repository_export: AbstractBookRepository = None
 
     def save(self, filename) -> int:
         """

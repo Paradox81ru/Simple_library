@@ -19,11 +19,9 @@ class BookRepositoryExport(AbstractBookRepositoryExport):
         Импортирует данные.
         :return: Возвращает кортеж, словаря книг, и словаря статусов этих книг.
         """
-        # books: dict[int, dict[str: Any]] = {}
         books: list[dict[str: Any]] = []
         books_status: dict[int, bool] = {}
         for book in self._book_repository.all_books:
-            # books[book.id] = copy(book.to_dict())
             books.append(copy(book.to_dict()))
             books_status[book.id] = self._book_repository.get_status_book(book.id).value
         return books, books_status
@@ -94,7 +92,7 @@ class BookRepositoryExport(AbstractBookRepositoryExport):
         """
         for _id, status in source_status_dict.items():
             _id = validation_id(_id)
-            # При экспорте проверятся, чтобы такой идентифкатор не превышал самый большой идентификатор в хранилище.
+            # При экспорте проверятся, чтобы такой идентификатор не превышал самый большой идентификатор в хранилище.
             if _id > self._last_id:
                 ValidationError(f'The identifier does not exist in the book store.', 'status', _id)
             destination_status_dict[validation_id(_id)] = validation_status(status)

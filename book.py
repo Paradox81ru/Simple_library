@@ -48,28 +48,6 @@ class Book:
         """ Год издания. """
         return self._year
 
-    # @property
-    # def status(self) -> BookStatus:
-    #     """
-    #     Статус книги.
-    #     :return: Если True, то 'в наличии', иначе 'выдана'.
-    #     """
-    #     return BookStatus.get_status(self._status)
-    #
-    # @status.setter
-    # def status(self, val: BookStatus | bool):
-    #     """
-    #     Статус книги.
-    #     :param val: Если True, то 'в наличии', иначе 'выдана'.
-    #     :raises ValidationError: Статус должен быть логическим значением.
-    #     """
-    #     self._status = validation_status(val)
-    #
-    # @property
-    # def is_available(self) -> bool:
-    #     """ Доступна ли книга. """
-    #     return self._status
-
     def to_dict(self):
         """ Преобразование данных в словарь. """
         return self.__dict__

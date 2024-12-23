@@ -239,7 +239,6 @@ class BookRepositoryTest(unittest.TestCase):
         self.assertEqual(result, expected_result)
         self.assertEqual(books_num, 0)
 
-
     def test_find_books_negative(self):
         """ Проверяет поиск книг негативный. """
         book_manager, _ = self._get_repository_filled_with_books()
