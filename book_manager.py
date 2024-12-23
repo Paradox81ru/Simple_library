@@ -70,7 +70,7 @@ class BookManager:
             if book is None:
                 return None
             else:
-                return str(self._book_repository.get_book_by_id(_id))
+                return f"{book}, status {self.get_status_book(book.id).to_str()}"
         except BookRepositoryError as err:
             raise BookManagerError(err.message)
 
@@ -121,11 +121,24 @@ class BookManager:
         """
         try:
             book = self._book_repository.changing_status_book(_id, status)
-            return book.id, book.status.to_str()
+            return book.id, self.get_status_book(book.id).to_str()
+        except BookRepositoryError as err:
+            raise BookManagerError(err.message)
+
+    def get_status_book(self, _id) -> BookStatus:
+        """
+        Возвращает статус книги
+        :param _id:
+        :return:
+        :raises BookManagerError: Книга с указанным идентификатором отсутствует;
+        """
+        try:
+
+            return self._book_repository.get_status_book(_id)
         except BookRepositoryError as err:
             raise BookManagerError(err.message)
 
     # noinspection PyMethodMayBeStatic
     def _book_list_to_str(self, book_list: tuple[Book, ...]):
         """ Преобразует список книг в строку """
-        return "\n".join(str(book) for book in book_list)
+        return "\n".join(f"{book}, status {self.get_status_book(book.id).to_str()}" for book in book_list)
