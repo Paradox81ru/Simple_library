@@ -137,7 +137,7 @@ class LibraryConsole:
                 search_str = input("Enter the title or part of the title of the book: ").strip()
             case SearchCriteria.SEARCH_AUTHOR:
                 clear_display()
-                search_str = input("Enter the author of the book: ").strip()
+                search_str = input("Enter the author or part of the author of the book: ").strip()
             case SearchCriteria.SEARCH_YEAR:
                 try:
                     clear_display()

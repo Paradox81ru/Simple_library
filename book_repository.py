@@ -139,8 +139,10 @@ class BookRepository(AbstractBookRepository):
 
     def find_book_by_author(self, author: str) -> tuple[Book, ...]:
         """ Поиск книг по автору. """
-        author = author.strip()
-        return tuple(filter(lambda b: b.author == author, self._books.values()))
+        author = author.strip().lower()
+        if author == "":
+            return ()
+        return tuple(filter(lambda b: author in b.author.lower(), self._books.values()))
 
     def find_book_by_title(self, title: str) -> tuple[Book, ...]:
         """ Поиск книг по заголовку. """
