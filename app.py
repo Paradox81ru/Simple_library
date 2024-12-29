@@ -14,7 +14,7 @@ from repository_export import BookRepositoryExport
 
 
 class SimpleLibrary:
-    REPOSITORY_FILENAME = "book_repository.json"
+    REPOSITORY_FILENAME = r"db/book_repository.json"
 
     def __init__(self):
         book_repository: AbstractBookRepository = BookRepository()

@@ -14,7 +14,10 @@ def get_root_path():
 
 class Logger:
     """ Класс логгера """
-    LOGGER_FILENAME = get_root_path() / "library.log"
+    log_dir = get_root_path() / "logs"
+    if not log_dir.exists():
+        log_dir.mkdir()
+    LOGGER_FILENAME = log_dir / "library.log"
 
     _loggers = {}
     logger_level = logging.ERROR
