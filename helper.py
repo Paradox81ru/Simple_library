@@ -2,6 +2,9 @@ import logging
 import os
 from pathlib import Path
 
+import platform
+
+CLEAR_COMMAND = 'clear' if platform.system() == 'Linux' else "cls"
 
 
 def get_root_path():
@@ -47,7 +50,7 @@ class Logger:
 
 def clear_display():
     """ Очищает дисплей. """
-    os.system("cls")
+    os.system(CLEAR_COMMAND)
 
 
 def print_awaiting_message(msg):
